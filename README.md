@@ -16,18 +16,22 @@ Current Netlify Adapter has 2 primary limitations:
 
 - For functionality that requires `context.clientContext` data, create a separate, custom serverless function that is copied post build into the final `functions` directory (via package.json script):
   - *Example 1*: `/src/additional_functions/delete-identity.js` (a function called explicitly by SK endpoints)
-  - *Example 2*: `/src/additional_functions/handle-subscription-change.js` (a webhook triggered by an external event [Stripe subscription udpate])
+  - *Example 2*: `/src/additional_functions/handle-subscription-change.js` (a webhook triggered by an external event [Stripe subscription update])
 - For specifically named files that are triggered by events, also create a separate custom serverless function that is copied post build into the final `functions` directory:
-  - *Example*: `/src/additional_functions/identity-signup.js` (function called automatically when a new user completes signup process)
+  - *Example*: `/src/additional_functions/identity-signup.js` (function called automatically when a new user completes sign-up process)
 
 ### Package versions in use at time of writing:
 
 - **@sveltejs/kit** 1.0.0-next.115
 - **@sveltejs/adapter-netlify** 1.0.0-next.17
 
-### Stpes to implement repo:
+====================================================================
 
-This repo is an in-progress example of a larger project that has several moving parts and integrations (Netlify Identity for authentication, Fauan DB for user data, and Stripe for subscription plans and management). To implement a fully working copy of it, follow the steps below –
+### Steps to Implement Repo
+
+*This repo is an in-progress example of a larger project that has several moving parts and integrations (Netlify Identity for authentication, Fauna DB for user data, and Stripe for subscription plans and management).*
+
+To implement a fully working copy of it, follow the steps below –
 
 1. Create accounts if needed for -
    - [Netlify.com](http://www.netlify.com)
@@ -107,10 +111,10 @@ This repo is an in-progress example of a larger project that has several moving 
     - within 'Trigger Deploy' menu select 'Clear cache and deploy site'
 
 13. Create and test new user
-    - on site's welcome page, signup a new user (via 'start your 14-day free trial' link)
+    - on site's welcome page, sign-up a new user (via 'start your 14-day free trial' link)
     - at this point you will see
       - a new user in Netlify : Identity admin without any role assigned (this user is created but not confirmed)
-    - within yout email you should receive a signup confirmation email
+    - when you sign-up you should receive a sign-up confirmation email
     - email link should open site and confirm your account
     - at this point you should see
       - a role (e.g. 'free') assigned to user in Netlify : Identity admin
@@ -133,6 +137,6 @@ This repo is an in-progress example of a larger project that has several moving 
     - install dependencies: `$ npm i`
     - run SvelteKit with Netlify dev: `$ ntl dev`
     - *notes*:
-      - most actions are available locally but some will create temporary false errors. For example, when logging in a user that exists in Netlify Identity you may see an 'Unable to Process' message and a 405 network repsonse. This may be an issue with Netlify Identity & Netlify Dev. Repeat the action 1-2 times and it will proceed normally.
+      - most actions are available locally but some will create temporary false errors. For example, when logging in a user that exists in Netlify Identity you may see an 'Unable to Process' message and a 405 network response. This may be an issue with Netlify Identity & Netlify Dev. Repeat the action 1-2 times and it will proceed normally.
       - to login in as user locally, user must exist in Netlify Identity (i.e. have signed up via locally run site or production site)
       - confirmation emails will link to the production site
