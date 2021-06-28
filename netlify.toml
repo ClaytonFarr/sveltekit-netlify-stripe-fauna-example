@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+  functions = "functions/"
+  publish = "build/"
+# [[headers]]
+#   for = "/path/to/serviceworker.js"
+#   [headers.values]
+#     cache-control = "max-age=0,no-cache,no-store,must-revalidate"

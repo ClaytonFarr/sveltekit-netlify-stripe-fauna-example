@@ -1,0 +1,12 @@
+type User {
+	netlifyID: ID
+	stripeID: ID
+	refreshToken: String
+	notificationEmailProductUpdates: Boolean
+	notificationEmailProductOffers: Boolean
+}
+
+type Query {
+	getUserByNetlifyID(netlifyID: ID!): User!
+	getUserByStripeID(stripeID: ID!): User!
+}

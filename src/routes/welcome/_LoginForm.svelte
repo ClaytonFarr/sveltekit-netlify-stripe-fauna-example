@@ -1,0 +1,90 @@
+<script>
+	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { createEventDispatcher } from 'svelte';
+	import * as http from '$lib/utils/http';
+	import autofocusFirstChildInput from '$lib/utils/autofocusFirstChildInput';
+	import { Form, Input, InputPassword } from '$lib/components/forms';
+	import FormContainer from './_FormContainer.svelte';
+
+	export let successDestination = '/';
+
+	let email = '';
+	let password = '';
+	let error = null;
+
+	const dispatch = createEventDispatcher();
+	const resetForm = () => {
+		email = '';
+		password = '';
+		error = null;
+	};
+	const resetPasswordHandler = () => {
+		resetForm();
+		dispatch('reset');
+	};
+	const signupHandler = () => {
+		resetForm();
+		dispatch('signup');
+	};
+	const loginHandler = async () => {
+		error = null; // reset any errors
+		try {
+			const data = await http.post('/api/loginUser', { email, password });
+			// if unsuccessful
+			if (!data.ok || data.body.error) throw { message: data.body.error };
+			// if successful, update client state & redirect client to main auth'd page
+			$session.user = data.body.user || {};
+			goto(successDestination);
+		} catch (err) {
+			error = [err.message];
+		}
+	};
+</script>
+
+<template lang="pug">
+
+	FormContainer(
+		heading='Sign in to your account'
+		)
+
+		svelte:fragment(slot='subheading')
+			| Or 
+			span.font-medium.text-action.hover_text-action-hover.cursor-pointer(on:click='{signupHandler}')
+				| start your 14-day free trial
+
+		svelte:fragment(slot='content')
+			Form(
+				fullWidthActions='{true}'
+				submitLabel='Sign In'
+				processingLabel='Sending…'
+				submitHandler='{loginHandler}'
+				tertiaryAction='{true}'
+				tertiaryActionLabel='Forgot your password?'
+				tertiaryActionType='handler'
+				tertiaryActionLink='{resetPasswordHandler}'
+				formLevelErrors='{error}'
+				)
+
+				div(use:autofocusFirstChildInput).space-y-4
+
+					Input(
+						label='Email Address'
+						type='email'
+						name='email'
+						autocomplete='email'
+						required
+						showRequiredHint='{false}'
+						bind:value='{email}'
+						)
+					InputPassword(
+						label='Password'
+						name='password'
+						autocomplete='current-password'
+						required
+						showRequiredHint='{false}'
+						validateOnInput='{false}'
+						bind:value='{password}'
+						)
+
+</template>

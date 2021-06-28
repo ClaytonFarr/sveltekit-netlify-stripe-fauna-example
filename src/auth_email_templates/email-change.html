@@ -1,0 +1,12 @@
+<h3>Confirm New Email Address</h3>
+
+<p>You've requested to update your email from {{ .Email }} to {{ .NewEmail }}.</p>
+
+<p>
+	Please follow this link to &ndash;
+	<a href="{{ .SiteURL }}/update-email#email_change_token={{ .Token }}">
+		confirm this new email address</a
+	>.
+</p>
+
+<!-- <p><a href="{{ .ConfirmationURL }}">Change Email</a></p> -->

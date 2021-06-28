@@ -1,0 +1,51 @@
+{
+	"name": "sveltekit-netlifyidentity-auth",
+	"description": "Complete authentication management solution (UX, UI, functionality) for SvelteKit and Netlify Identity (GoTrue). Built with Svelte, TailwindCSS, and Pug - and to be deployed on Netlify",
+	"version": "0.0.1",
+	"comments": {
+		"custom-functions": "Netlify Identity requires access to additional data within serverless functions (from context.clientContext) to perform admin functionality (e.g. updating/deleting users). At the time of writing, this is not yet available natively within SvelteKit endpoints. This is being worked around currently by creating these admin functions separately, in the format Netlify expects (https://docs.netlify.com/functions/functions-and-identity/), add appended to the final `functions`directory at build time.",
+		"custom-functions-directory": "The current project structure presumes a `src/additional_functions` directory exists for custom serverless functions.",
+		"authentication-emails": "The emails Netlify Identity sends on authentication events (e.g. signup, password recovery, etc.) can be customized. Enabling this requires updating settings within your Netlify Identity instance (https://docs.netlify.com/visitor-access/identity/identity-generated-emails/#email-templates) and editing the HTML templates within `src/auth_email_templates` as desired. The path to your built templates will be '/auth-email-templates/{templatename}.html'.",
+		"authentication-email-templates": "The current project structure presumes a `src/auth_email_templates` directory exists for custom email templates.",
+		"dependencies": "`node-fetch` included as dependency for custom serverless functions (e.g. 'delete-user'). This dependency can be removed if fetch no longer needed in custom serverless functions.",
+		"devDependencies": "`cpy-cli` and `npm-run-all` are used to include custom serverless functions and authentication email templates in final build with rendered SvelteKit files."
+	},
+	"scripts": {
+		"dev": "svelte-kit dev --port 3000",
+		"build-sk": "svelte-kit build",
+		"preview": "svelte-kit preview",
+		"copy-functions": "cpy '**/*' '../../functions' --cwd=src/additional_functions --parents",
+		"copy-auth-email-templates": "cpy '**/*' '../../build/auth-email-templates' --cwd=src/auth_email_templates --parents",
+		"build": "run-s build-sk copy-functions copy-auth-email-templates",
+		"lint": "prettier --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
+		"format": "prettier --write --plugin-search-dir=. ."
+	},
+	"dependencies": {
+		"node-fetch": "^2.6.1",
+		"stripe": "^8.156.0"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-netlify": "next",
+		"@sveltejs/kit": "next",
+		"@tailwindcss/forms": "^0.3.3",
+		"@tailwindcss/typography": "^0.4.1",
+		"autoprefixer": "^10.2.6",
+		"cpy-cli": "^3.1.1",
+		"cssnano": "^5.0.6",
+		"eslint": "^7.29.0",
+		"eslint-config-prettier": "^8.3.0",
+		"eslint-plugin-svelte3": "^3.2.0",
+		"npm-run-all": "^4.1.5",
+		"postcss": "^8.3.5",
+		"postcss-load-config": "^3.1.0",
+		"prettier": "~2.3.1",
+		"prettier-plugin-svelte": "^2.3.1",
+		"pug": "^3.0.2",
+		"svelte": "^3.38.2",
+		"svelte-notifications": "^0.9.91",
+		"svelte-preprocess": "^4.7.3",
+		"tailwindcss": "^2.2.2",
+		"validator": "^13.6.0"
+	},
+	"type": "module"
+}
