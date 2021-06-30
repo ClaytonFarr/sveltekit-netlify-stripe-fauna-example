@@ -12,52 +12,10 @@ const fetch = require('node-fetch');
 const stripe = require('stripe')(process.env['STRIPE_SECRET_KEY']);
 
 
-// Fauna Query Helper Function
-// (including this inline to avoid have to secure a separate function)
 // -----------------------------------------------------------------------------
-async function faunaQuery({ query, variables }) {
-  const faunaUrl = 'https://graphql.fauna.com/graphql';
-  const adminAuthHeader = `Bearer ${process.env['FAUNADB_SERVER_SECRET']}`;
-
-  try {
-    const response = await fetch(faunaUrl, {
-      method: 'POST',
-      headers: { Authorization: adminAuthHeader },
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
-    });
-    const json = await response.json(); 
-    // if response fails throw error
-    if (!response.ok) {
-      let errorMessage = response.statusText;
-      if(json.error_description) errorMessage = json.error_description;
-      if(json.msg) errorMessage = json.msg;
-      console.log(Date.now(), ': DB-API faunaQuery ERROR 1', errorMessage);
-      const errorResponse = { status: response.status, message: errorMessage };
-      throw errorResponse;
-    }
-    // else return
-    return {
-      ok: true,
-      status: response.status || 200,
-      body: json || {},
-    };
-
-  } catch (error) {
-    const errorMessage = error.message || error.toString() || 'Caught error.';
-    return {
-      ok: false,
-      status: error.status || 400,
-      body: { error: errorMessage },
-    };
-  }
-};
-
-
 // Identity-Signup serverless function
 // -----------------------------------------------------------------------------
+
 exports.handler = async (event) => {
 
   // when this function is triggered. 'user' data is automatically passed by Netlify Identity
@@ -67,43 +25,73 @@ exports.handler = async (event) => {
   // 'user' not present if Netlify didn't trigger function from a user event
   if (user) {
 
-    // Create new customer in Stripe
-    // --------------------------------------------------------------------------------
-    const customer = await stripe.customers.create({ email: user.email }); // https://stripe.com/docs/api/customers/create
+    try {
 
-    // subscribe the new customer to default, 'Free' plan
-    await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: process.env['STRIPE_DEFAULT_PRICE_PLAN'] }],
-    });
+      // create new customer in Stripe
+      // https://stripe.com/docs/api/customers/create
+      const customer = await stripe.customers.create({ email: user.email });
+      if(!customer.id) {
+        console.log(new Date().toISOString(), '💥 IDENTITY-SIGNUP function : Create Stripe Customer unsuccessful :', customer);
+        throw { statusMessage: 'error', errorMessage: customer.message || 'Unable to create Stripe customer.'  }
+      }
+      
+      // subscribe the new customer to default, 'Free' plan
+      // https://stripe.com/docs/api/subscriptions/create
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{ price: process.env['STRIPE_DEFAULT_PRICE_PLAN'] }],
+      });
+      if(!subscription.id) {
+        console.log(new Date().toISOString(), '💥 IDENTITY-SIGNUP function : Create Stripe Subscription unsuccessful :', subscription);
+        throw { statusMessage: 'error', errorMessage: subscription.message || 'Unable to create Stripe subscription.'  }
+      }
 
-    // Store Netlify and Stripe IDs in Fauna user database
-    // --------------------------------------------------------------------------------
-    await faunaQuery({
-      query: `
-        mutation ($netlifyID: ID!, $stripeID: ID!) {
-          createUser(data: { netlifyID: $netlifyID, stripeID: $stripeID }) {
-            netlifyID
-            stripeID
-          }
-        }
-      `,
-      variables: {
-        netlifyID: user.id,
-        stripeID: customer.id,
-      },
-    });
+      // store Netlify and Stripe IDs in Fauna user database
+      const databaseResponse = await fetch('https://graphql.fauna.com/graphql', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${process.env['FAUNADB_SERVER_SECRET']}` },
+        body: JSON.stringify({
+          query: `
+            mutation ($netlifyID: ID!, $stripeID: ID!) {
+              createUser(data: { netlifyID: $netlifyID, stripeID: $stripeID }) {
+                netlifyID
+                stripeID
+              }
+            }
+          `,
+          variables: {
+            netlifyID: user.id,
+            stripeID: customer.id,
+          },
+        }),
+      });
+      const databaseUpdate = await databaseResponse.json();
+      if(!databaseResponse.ok || databaseUpdate.data === null) {
+        console.log(new Date().toISOString(), '💥 IDENTITY-SIGNUP function : Update Fauna DB unsuccessful :', databaseResponse);
+        throw { statusMessage: `error (${databaseResponse.status})`, errorMessage: databaseUpdate.errors[0].message || 'Unable to complete database update.'  }
+      }
 
-    // Update user's role within Identity to match default plan assigned
-    // --------------------------------------------------------------------------------
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        app_metadata: {
-          roles: ['free'],
-        },
-      }),
-    };
+      // update user's role within Identity to match default plan assigned
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          statusMessage: 'success', 
+          app_metadata: {
+            roles: ['free'],
+          },
+        }),
+      };
 
+    } catch (error) {
+      const { statusMessage, errorMessage } = error;
+      console.log(new Date().toISOString(), '💥 IDENTITY-SIGNUP function : Caught Error :', error);
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          statusMessage, 
+          error: errorMessage,
+        }),
+      };
+    }
   }
 };

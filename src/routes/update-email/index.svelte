@@ -18,7 +18,7 @@
 	import { browser } from '$app/env';
 	import { session } from '$app/stores';
 	import { emailUpdatePending } from '$lib/store.js';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 
 	const businessName = import.meta.env.VITE_BUSINESS_NAME;
 	let windowWidth = null;
@@ -33,23 +33,24 @@
 		try {
 			let data = await http.post('/api/updateEmailConfirm', { updateToken });
 			// if confirmation request fails, throw error
-			if (!data.ok) throw {};
+			if (data.error) throw {};
+			console.log('data :', data);
 			// if confirmation unable to reset JWT cookie have
 			//    user log back in to refresh claims for UI
-			if (data.body.jwtUpdated === false) {
-				goto('/welcome?email-updated');
+			if (data.jwtUpdated === false) {
 				http.post('/api/logoutUser');
 				$emailUpdatePending = false;
 				$session.user = {};
+				goto('/welcome?email-updated');
 			}
 			// if confirmation able to reset JWT cookie
 			// ...reset flag for emailUpdatePending message,
 			$emailUpdatePending = false;
 			// ...update client session with new JWT claims
 			//    (next server rendered page/request will use new JWT cookie)
-			($session.user.email = data.body.newEmail),
-				// ...toggle correct UI for this view,
-				(emailUpdateSuccess = true);
+			$session.user.email = data.newEmail;
+			// ...toggle correct UI for this view,
+			emailUpdateSuccess = true;
 		} catch (err) {
 			// toggle correct UI for this view
 			emailUpdateSuccess = false;

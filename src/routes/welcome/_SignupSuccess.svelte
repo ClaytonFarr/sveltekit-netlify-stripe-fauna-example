@@ -1,7 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import { Button } from '$lib/components/forms';
-	import FormContainer from './_FormContainer.svelte';
+	import FormContainer from './_WelcomeFormContainer.svelte';
 
 	export let submittedEmail = null;
 

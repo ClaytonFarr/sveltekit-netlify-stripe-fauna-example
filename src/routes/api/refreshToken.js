@@ -1,54 +1,56 @@
-import * as auth from '$lib/apis/auth-api';
-import * as db from '$lib/apis/db-api'
-import verifyCurrentToken from '$lib/utils/verifyCurrentToken';
-import errorResponse from '$lib/utils/errorResponse';
+import * as auth from '$lib/apis/auth-api-methods';
+import * as db from '$lib/apis/db-api-methods'
+import { serverResponse } from '$lib/utils/helpers';
 
 export async function post(request) {
 
   try {
-    // access token can come from two places
-    // from request.locals when endpoint is called from client (.svelte file) and hooks.js hydrates request.locals from JWT cookie
-    // passed in request.body when endpoint is called from another endpoint (.js file)
-    const token = request.locals.token ? request.locals.token : request.body.token || null;
-        
-    // authorize request
-    const accessTokenCheck = await verifyCurrentToken(token);
 
-    // console.log(Date.now(), ': REFRESH TOKEN endpoint accessTokenCheck :', accessTokenCheck);
+    // access token can come from two places
+    // 1) from request.locals when endpoint is called from client (.svelte file) and hooks.js hydrates request.locals from JWT cookie
+    // 2) passed in request.body when endpoint is called from another endpoint (.js file)
+    const token = request.locals.token ? request.locals.token : request.body.token || null;
+
+    const accessTokenCheck = await auth.verifyCurrentToken(token);
+    if(!accessTokenCheck.ok) throw { statusMessage: 'error', errorMessage: 'Unauthorized Session' };
 
     if(accessTokenCheck.ok) {
 
-      // attempt to request new tokens
+      // Attempt to request new tokens
       // -------------------------------------------------------------------------------------------
-      const netlifyId = accessTokenCheck.body?.id;
+      const netlifyId = accessTokenCheck.id;
       const previousRefreshToken = await db.getRefreshToken(netlifyId);
-      const newTokensRequest = await auth.requestNewAccessToken(previousRefreshToken);
-      // a valid newTokensRequest will return an object that includes an access_token
-      // an invalid newTokensRequest will return 400 with 'error_description' message
-      // if newTokensRequest fails, throw error
-      if (!newTokensRequest.body?.access_token || newTokensRequest.body?.error_description) throw { status: newTokensRequest.status, message: newTokensRequest.body?.error_description, };
-      // else, continue
+      const data = await auth.requestNewAccessToken(previousRefreshToken);
 
-      // attempt to replace used refresh token
+      // a valid response will return an object that includes an access_token
+      // an invalid data will return 400 with 'error' message
+      if (!data.access_token || data.error) throw { statusMessage: data.statusMessage, errorMessage: data.error, };
+
+      // Attempt to replace used refresh token
       // -------------------------------------------------------------------------------------------
-      const newRefreshToken = newTokensRequest.body?.refresh_token;
+      const newRefreshToken = data.refresh_token;
       await db.saveRefreshToken(netlifyId, newRefreshToken);
       
-      // return new access token
+      // Return new access token
       // -------------------------------------------------------------------------------------------
-      const newAccessToken = newTokensRequest.body?.access_token;
-      return {
-        ok: true,
-        status: 200,
-        body: { token: newAccessToken }
-      };
+      return serverResponse(200, true, {
+        token: data.access_token,
+      })
 
-    } else {
-      throw { status: 401, message: 'Unauthorized Request', };
     }
 
   } catch (error) {
-    return errorResponse(error, 'refreshToken');
+    let { statusMessage, errorMessage } = error;
+    if (!errorMessage) console.log(new Date().toISOString(), "💥 'refreshToken' endpoint unsuccessful : error.message :", error.message);
+    
+    if (errorMessage?.toLowerCase().includes('invalid refresh token')) {
+      errorMessage = 'Unable to renew tokens.'
+    }
+
+    return serverResponse(200, false, {
+      statusMessage: statusMessage || 'error',
+      error: errorMessage || 'Unsuccessful Request',
+    });
   }
 
 }

@@ -1,7 +1,5 @@
-import * as auth from '$lib/apis/auth-api';
-import { parseJwt } from '$lib/utils/helpers';
-import verifyCurrentToken from '$lib/utils/verifyCurrentToken';
-import errorResponse from '$lib/utils/errorResponse';
+import * as auth from '$lib/apis/auth-api-methods';
+import { serverResponse } from '$lib/utils/helpers';
 
 export async function post(request) {
 
@@ -13,25 +11,28 @@ export async function post(request) {
     const { newEmail, password } = request.body;
 
     // authorize request
-    const accessTokenCheck = await verifyCurrentToken(token); // validate user session    
+    const accessTokenCheck = await auth.verifyCurrentToken(token); // validate user session    
+    if(!accessTokenCheck.ok) throw { statusMessage: 'error', errorMessage: 'Unauthorized Session' };
+
     const authCheck = await auth.loginUser(user.email, password); // validate user entered password
-    const authCheckEmail = authCheck.body.access_token ? parseJwt(authCheck.body.access_token).email : null; // retrieve validated email
-    const emailMatch = (authCheckEmail === user.email); // compare returned email to user email in session
+    if(authCheck.error) throw { statusMessage: authCheck.statusMessage, errorMessage: 'Please double-check current password.' };
+
+    const emailMatch = (accessTokenCheck.email === user.email); // compare returned email to user email in session
+    if(!emailMatch) throw { statusMessage: 'error', errorMessage: 'Unauthorized User' };
 
     if(accessTokenCheck.ok && authCheck && emailMatch) {
     
-      // attempt to start 'update email' process;
-      // (if successful, NI will send confirmation email to new address)
-      const updateEmailRequest = await auth.updateUser(token, { email: newEmail });
+      // Attempt to start 'update email' process;
+      // -------------------------------------------------------------------------------------------
+      // if successful, Netlify Identity will send confirmation email to new email address
+      const updateEmail = await auth.updateUser(token, { email: newEmail });
 
-      // console.log(Date.now(), ': UPDATE EMAIL endpoint updateEmailRequest :', updateEmailRequest);
-
-      // When an email update request is successful 2 keys are added/updated: 'new_email' & 'email_change_sent_at'
+      // when an email update request is successful 2 keys are added/updated: 'new_email' & 'email_change_sent_at'
       // - 'new_email' key may already exist if prior email change is still pending;
       // - 'new_email' key is deleted when a pending email change is confirmed;
       // - 'email_change_sent_at' key may already exist if any prior email change event has occurred (is not deleted).
       //
-      // Example successful return -
+      // example successful return -
       // 
       // { "id": "some-id-value",
       //   "aud": "",
@@ -46,36 +47,42 @@ export async function post(request) {
       //   "created_at": "2021-01-01T01:00:00Z",
       //   "updated_at": "2021-01-01T01:00:00.000001Z" }
 
-      // Test new email matches requested email address
+      // test new email matches requested email address
       const submittedNewEmail = newEmail;
-      const responseNewEmail = updateEmailRequest.body.new_email;
+      const responseNewEmail = updateEmail.new_email;
       const isCorrectEmail = submittedNewEmail === responseNewEmail;
 
-      // Test email change request is current
+      // test email change request is current
       const now = new Date();
-      const responseEmailRequestTimestamp = new Date(updateEmailRequest.body.email_change_sent_at);
+      const responseEmailRequestTimestamp = new Date(updateEmail.email_change_sent_at);
       const timestampMsDifference = now.getTime() - responseEmailRequestTimestamp.getTime();
       const isRecentTimestamp = timestampMsDifference/1000 < 60; // within last 60 seconds
 
-      // throw error if either success test fails
-      if (!isCorrectEmail || !isRecentTimestamp) throw { status: 500, message: 'Unable to update email - please try again.', };
+      // if either success test fails throw error
+      if (!isCorrectEmail || !isRecentTimestamp) throw { statusMessage: updateEmail.statusMessage, errorMessage: 'Unable to update email - please try again.', };
 
-      // else, continue
-      return {
-        ok: true,
-        status: updateEmailRequest.status,
-        body: {
-          pendingEmail: updateEmailRequest.body.new_email,
-          emailChangeSentAt: updateEmailRequest.body.email_change_sent_at,
-        }
-      };
+      return serverResponse(200, true, {
+        pendingEmail: updateEmail.new_email,
+        emailChangeSentAt: updateEmail.email_change_sent_at,
+      })
 
-    } else {
-      throw { status: authCheck.status || 401, message: authCheck.body.error || 'Unauthorized request.', };
     }
     
   } catch (error) {
-    return errorResponse(error, 'updateEmailRequest');
+    let { statusMessage, errorMessage } = error;
+    if (!errorMessage) console.log(new Date().toISOString(), "💥 'updateEmailRequest' endpoint unsuccessful : error.message :", error.message);
+
+    if (errorMessage?.toLowerCase().includes('bad request')) {
+      errorMessage = 'We encountered a system error - please try again.'
+    }
+    if (errorMessage?.toLowerCase().includes('user not found')) {
+      errorMessage = 'Please double-check current password.'
+    }
+
+    return serverResponse(200, false, {
+      statusMessage: statusMessage || 'error',
+      error: errorMessage || 'Unsuccessful Request',
+    });
   }
 
 }

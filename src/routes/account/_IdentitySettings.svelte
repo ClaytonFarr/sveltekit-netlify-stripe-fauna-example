@@ -1,7 +1,7 @@
 <script>
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 	import { validateEmailAddress } from '$lib/utils/helpers';
 	import { emailUpdatePending } from '$lib/store.js';
 	import { notifications } from '$lib/components/notifications/store.js';
@@ -30,25 +30,17 @@
 	const updateEmailAddress = async () => {
 		const valid = validateEmailAddress(newEmail);
 		const unique = newEmail !== savedEmail;
-		// double-check if new email valid & unique
 		if (valid && unique) {
-			// pass job to 'updateEmailRequest' endpoint
 			try {
 				const request = await http.post('/api/updateEmailRequest', { newEmail, password: updateEmailPassword });
-				// if unsuccessful
-				if (!request.ok || request.body.error) throw { message: request.body.error };
-				// if successful
-				// ...update update pending flag
+				if (request.error) throw { message: request.error };
 				$emailUpdatePending = true;
-				// ...show notification
 				notifications.success({
 					message: 'Email Update Submitted',
 					detail: 'Please check for an email in your inbox to complete update',
 				});
 			} catch (err) {
-				// ...reset edit variable to saved value
 				newEmail = savedEmail;
-				// display request error message
 				notifications.warning({
 					message: 'Unable to Update',
 					detail: err.message,
@@ -90,16 +82,12 @@
 	const requestPasswordRecovery = () => goto('/welcome?reset');
 
 	const updatePassword = async () => {
-		// double-check if new password confirmed & unique
 		const confirmed = newPassword === newPasswordConfirmation;
 		const unique = currentPassword !== newPassword;
 		if (confirmed && unique) {
-			// pass job to 'updatePassword' endpoint
 			try {
 				const request = await http.post('/api/updatePassword', { currentPassword, newPassword });
-				// if unsuccessful
-				if (!request.ok || request.body.error) throw { message: request.body.error };
-				// if successful
+				if (request.error) throw { message: request.error };
 				notifications.success({
 					message: 'Password Updated',
 					secondsDisplayed: 3,

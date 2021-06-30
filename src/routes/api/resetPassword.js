@@ -3,23 +3,20 @@ import { serverResponse } from '$lib/utils/helpers';
 
 export async function post(request) {
 
-  // NOTE - used by logged-in users updating password via /account page
+  // NOTE - used by logged-out users completing passwordRecoveryRequest & Reset loop from /welcome
 
   try {
     const { token, user } = request.locals;
-    const { currentPassword, newPassword } = request.body;
-    
+    const { newPassword } = request.body;
+
     // authorize request
     const accessTokenCheck = await auth.verifyCurrentToken(token); // validate user session
     if(!accessTokenCheck.ok) throw { statusMessage: 'error', errorMessage: 'Unauthorized Session' };
     
-    const authCheck = await auth.loginUser(user.email, currentPassword); // validate user entered password
-    if(authCheck.error) throw { statusMessage: authCheck.statusMessage, errorMessage: 'Please double-check current password.' };
-
     const emailMatch = (accessTokenCheck.email === user.email); // compare returned email to user email in session
     if(!emailMatch) throw { statusMessage: 'error', errorMessage: 'Unauthorized User' };
     
-    if(accessTokenCheck.ok && authCheck && emailMatch) {
+    if(accessTokenCheck.ok && emailMatch) {
     
       // Attempt to update password
       // -------------------------------------------------------------------------------------------
@@ -52,13 +49,10 @@ export async function post(request) {
 
   } catch (error) {
     let { statusMessage, errorMessage } = error;
-    if (!errorMessage) console.log(new Date().toISOString(), "💥 'updatePassword' endpoint unsuccessful : error.message :", error.message);
+    if (!errorMessage) console.log(new Date().toISOString(), "💥 'resetPassword' endpoint unsuccessful : error.message :", error.message);
 
     if (errorMessage?.toLowerCase().includes('bad request')) {
       errorMessage = 'We encountered a system error - please try again.'
-    };
-    if (errorMessage?.toLowerCase().includes('user not found')) {
-      errorMessage = 'Please double-check current password.'
     };
 
     return serverResponse(200, false, {

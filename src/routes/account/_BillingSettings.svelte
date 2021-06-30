@@ -2,19 +2,17 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { notifications } from '$lib/components/notifications/store.js';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 	import SingleValueFormContainer from '$lib/components/SingleValueFormContainer.svelte';
 
 	let planLevel = 'Loading...';
 	const retrievePlan = async () => {
 		try {
-			const currentPlanRequest = await http.get('/api/retrievePlan');
-			// console.log(Date.now(), ': BillingSettings currentPlanRequest :', currentPlanRequest);
-			// if unsuccessful
-			if (!currentPlanRequest.ok || !currentPlanRequest.body.plan || currentPlanRequest.body?.error)
-				throw { message: currentPlanRequest.body?.error.toString() };
-			// if successful
-			planLevel = currentPlanRequest.body.plan;
+			const currentPlan = await http.get('/api/retrievePlan');
+			if (currentPlan.error || !currentPlan.plan) {
+				throw {};
+			}
+			planLevel = currentPlan.plan;
 		} catch (err) {
 			planLevel = `Click 'Manage' to view and edit current plan.`;
 		}
@@ -22,13 +20,11 @@
 
 	const manageBillingHandler = async () => {
 		try {
-			const manageBillingRequest = await http.get('/api/manageBilling');
-			// console.log(Date.now(), ': BillingSettings manageBillingRequest :', manageBillingRequest);
-			// if unsuccessful
-			if (!manageBillingRequest.ok || !manageBillingRequest.body.link || manageBillingRequest.body?.error)
-				throw { message: manageBillingRequest.body?.error.toString() };
-			// if successful
-			goto(manageBillingRequest.body.link);
+			const manageBillingLink = await http.get('/api/manageBilling');
+			if (manageBillingLink.error || !manageBillingLink.link) {
+				throw { message: manageBillingLink.error };
+			}
+			goto(manageBillingLink.link);
 		} catch (err) {
 			notifications.warning({
 				message: 'Error',

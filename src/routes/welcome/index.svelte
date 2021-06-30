@@ -1,14 +1,14 @@
 <script context="module">
 	export async function load({ page, session }) {
 		// check flags for uses cases that require special load state or messaging
-		const resettingPassword = page.query.has('reset');
+		const loggedInUserResettingPassword = page.query.has('reset');
 		const updatingEmailAddress = page.query.toString().includes('update-email');
 		const emailUpdated = page.query.has('email-updated');
 		// TODO: add flag to check for sessions that timed out (JWT cookie expired)
 		const sessionExpired = false;
 
 		// redirect authenticated visitors
-		if (session.user.authenticated && !resettingPassword) {
+		if (session.user.authenticated && !loggedInUserResettingPassword) {
 			return {
 				status: 302,
 				redirect: '/',
@@ -17,7 +17,7 @@
 
 		return {
 			props: {
-				resettingPassword,
+				loggedInUserResettingPassword,
 				updatingEmailAddress,
 				sessionExpired,
 				emailUpdated,
@@ -31,14 +31,14 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { notifications } from '$lib/components/notifications/store.js';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 	import LoginForm from './_LoginForm.svelte';
 	import ResetPasswordForm from './_ResetPasswordForm.svelte';
 	import ResetPasswordSuccess from './_ResetPasswordSuccess.svelte';
 	import SignupForm from './_SignupForm.svelte';
 	import SignupSuccess from './_SignupSuccess.svelte';
 
-	export let resettingPassword;
+	export let loggedInUserResettingPassword;
 	export let updatingEmailAddress;
 	export let sessionExpired;
 	export let emailUpdated;
@@ -61,12 +61,10 @@
 	const checkConfirmationToken = async (token) => {
 		try {
 			let data = await http.post('/api/confirmUser', { token });
-			if (!data.ok) throw {};
-			// if successful, update client state & redirect client to main auth'd page
-			$session.user = data.body.user || {};
+			if (data.error) throw {};
+			$session.user = data.user || {};
 			goto('/');
 		} catch (err) {
-			// redirect client to main un-auth'd page
 			goto('/welcome');
 			// TODO: update UI to handle this failure more elegantly
 		}
@@ -82,7 +80,7 @@
 	// ----------------------------------------------------------------------------------------
 	// Users arriving at /welcome to reset password
 	// ----------------------------------------------------------------------------------------
-	if (resettingPassword) reset = true; // load form in correct state
+	if (loggedInUserResettingPassword) reset = true; // load form in correct state
 
 	// ----------------------------------------------------------------------------------------
 	// Users that had session expire / time out
@@ -175,7 +173,7 @@
               +if('!reset')
                 LoginForm(on:signup='{toggleLoginForm}' on:reset='{toggleResetForm}' successDestination='{loginDestination}')
                 +elseif('!resetSuccess')
-                  ResetPasswordForm(on:cancel='{toggleResetForm}' on:success='{toggleResetSuccess}')
+                  ResetPasswordForm(on:cancel='{toggleResetForm}' on:success='{toggleResetSuccess}' '{loggedInUserResettingPassword}')
                   +else()
                     ResetPasswordSuccess(on:login!='{() => { reset = false; resetSuccess = false }}')
               +else()

@@ -1,5 +1,5 @@
-import * as auth from '$lib/apis/auth-api';
-import errorResponse from '$lib/utils/errorResponse';
+import * as auth from '$lib/apis/auth-api-methods';
+import { serverResponse } from '$lib/utils/helpers';
 
 export async function post(request) {
   
@@ -7,26 +7,24 @@ export async function post(request) {
   // 'SMTP_MAX_FREQUENCY' setting @ https://github.com/netlify/gotrue/blob/master/README.md#e-mail
 
   try {
-    // attempt to sign up user
     const { email, password } = request.body;
-    const signupUserRequest = await auth.signupUser(email, password);
+    const data = await auth.signupUser(email, password);
+    if (data.error) {
+      throw { statusMessage: data.statusMessage, errorMessage: data.error, };
+    }
+    return serverResponse(200, true, {
+      email: data.email,
+    });
 
-    // console.log(Date.now(), ': SIGNUP USER endpoint signupUserRequest :', signupUserRequest);
-
-    // throw error if success test fails
-    if (!signupUserRequest.ok || signupUserRequest.body.error) throw { status: signupUserRequest.status, message: signupUserRequest.body.error, };
-
-    // else, continue
-    return {
-      ok: true,
-      status: signupUserRequest.status,
-      body: {
-        email: signupUserRequest.body.email,
-      }
-    };
-      
   } catch (error) {
-    return errorResponse(error, 'signupUser');
+    let { statusMessage, errorMessage } = error;
+    if (errorMessage?.toLowerCase().includes('registered')) {
+      errorMessage = 'An account for this email already exists.'
+    }
+    return serverResponse(200, false, {
+      statusMessage : statusMessage || 'error',
+      error: errorMessage || error.message || 'Unknown error',
+    });
   }
 
 }

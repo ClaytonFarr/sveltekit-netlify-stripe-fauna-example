@@ -1,28 +1,23 @@
-import * as auth from '$lib/apis/auth-api';
-import * as db from '$lib/apis/db-api'
-import { parseJwt } from '$lib/utils/helpers'
-import errorResponse from '$lib/utils/errorResponse'
+import * as auth from '$lib/apis/auth-api-methods';
+import * as db from '$lib/apis/db-api-methods'
+import * as cookie from '$lib/utils/cookies';
+import { serverResponse, parseJwt } from '$lib/utils/helpers';
 
 export async function post(request) {
 
   try {
-
-    // attempt to confirm signup token
     const { token } = request.body; // #confirmation_token value passed to endpoint
-    const signupTokenCheck = await auth.confirmUser(token);
+    const data = await auth.confirmUser(token);
+    const jwt = data.access_token;
 
-    // console.log(Date.now(), ': CONFIRM endpoint signupTokenCheck :', signupTokenCheck);
-
-    // if signupTokenCheck fails throw error
-    if (!signupTokenCheck.ok || signupTokenCheck.body.error) throw { status: signupTokenCheck.status, message: signupTokenCheck.body.error, };
-
-    // if access token doesn't exist in response throw error
-    const jwt = signupTokenCheck.body.access_token;
-    if (!jwt) throw { status: signupTokenCheck.status, message: signupTokenCheck.body.error, };
+    // if error or missing JWT, throw
+    if (data.error || !jwt) {
+      throw { statusMessage: data.statusMessage, errorMessage: data.error, };
+    }
 
     // grab tokens and claims
     const jwtPayload = parseJwt(jwt);
-    const refreshToken = signupTokenCheck.body.refresh_token;
+    const refreshToken = data.refresh_token;
     const netlifyId = jwtPayload.sub;
     const body = {
       user: {
@@ -35,13 +30,18 @@ export async function post(request) {
 
     // update user's refresh token on successful login
     await db.saveRefreshToken(netlifyId, refreshToken);
-
-    // set user's identity JWT cookie
-    return auth.setIdentityCookies(signupTokenCheck.status, body, signupTokenCheck.body.access_token);
+    // return response that also set identity JWT cookie
+    return cookie.setIdentityCookies(body, jwt);
 
   } catch (error) {
-    // TODO: add information for UI to handle failure gracefully
-    return errorResponse(error, 'confirmUser');
+    let { statusMessage, errorMessage } = error;
+    if (errorMessage?.toLowerCase().includes('bad request')) {
+      errorMessage = 'Unable to Confirm Account'
+    }
+    return serverResponse(200, false, {
+      statusMessage : statusMessage || 'error',
+      error: errorMessage || error.message || 'Unknown error',
+    });
   }
 
 }

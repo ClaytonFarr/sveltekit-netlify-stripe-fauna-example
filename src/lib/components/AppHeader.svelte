@@ -1,12 +1,12 @@
 <script>
 	import { page, session } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 	import DropdownMenu from '$lib/components/DropdownMenu.svelte';
 
 	// TODO: add logic to close Narrow Screen menu when 1) link selected, 2) click occurs outside menu
 	let narrowScreenMenuOpen = false;
-  export let businessName; // bringing this in as a prop since import call with env.VITE_BUSINESS_NAME breaks build in this context for an unknown reason
+	export let businessName; // bringing this in as a prop since import call with env.VITE_BUSINESS_NAME breaks build in this context for an unknown reason
 
 	const logoutHandler = () => {
 		// update client state, redirect client, and attempt to revoke refresh tokens

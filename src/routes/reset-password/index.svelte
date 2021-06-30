@@ -1,52 +1,49 @@
 <script>
 	import { browser } from '$app/env';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 	import { Form, InputPassword } from '$lib/components/forms';
 
 	const businessName = import.meta.env.VITE_BUSINESS_NAME;
 	let windowWidth = null;
 	const tailwindLgBreakpoint = 1024;
 
-	// VERIFY TOKEN
+	// VERIFY RECOVERY TOKEN
+	// ------------------------------------------------------------------------
 	// if valid, passwordRecoveryVerify will set a valid JWT httpOnly cookie
 	let recoveryTokenValid = null;
 	const checkRecoveryToken = async (token) => {
 		try {
 			let data = await http.post('/api/passwordRecoveryVerify', { token });
-			if (!data.ok) throw {};
-			// if successful, display password reset UI
+			if (data.error) throw {};
 			recoveryTokenValid = true;
 		} catch (err) {
-			// if unsuccessful, display error UI
 			recoveryTokenValid = false;
 		}
 	};
 	// check for recovery token on page load
-	const tokenName = `#recovery_token`;
-	if (browser && location.hash && location.hash.startsWith(tokenName)) {
-		const token = location.hash.slice(tokenName.length + 1);
+	const recoveryTokenName = `#recovery_token`;
+	if (browser && location.hash && location.hash.startsWith(recoveryTokenName)) {
+		const token = location.hash.slice(recoveryTokenName.length + 1);
 		checkRecoveryToken(token);
 	}
-	if (browser && (!location.hash || !location.hash.startsWith(tokenName))) {
+	if (browser && (!location.hash || !location.hash.startsWith(recoveryTokenName))) {
 		recoveryTokenValid = false;
 	}
 
-	// PASSWORD RESET
-	let password = null;
+	// RESET PASSWORD
+	// ------------------------------------------------------------------------
+	let newPassword = null;
 	let passwordConfirmation = null;
 	let error = null;
 	let passwordResetSuccess = false;
-	// make request to update password with JWT cookie
 	const updatePasswordHandler = async () => {
-		error = null; // reset any error messages
+		error = null; // reset any errors
 		try {
-			let data = await http.post('/api/updatePassword', { password });
-			if (!data.ok || data.body.error) throw { message: data.body.error };
-			// if successful, display success UI
+			let data = await http.post('/api/resetPassword', { newPassword });
+			if (data.error) throw { message: data.error };
 			passwordResetSuccess = true;
 		} catch (err) {
-			// if unsuccessful display error message
-			error = err.message;
+			error = [err.message];
 		}
 	};
 </script>
@@ -78,6 +75,7 @@
 
           Form(
             fullWidthActions='{true}'
+            includeActions='{!passwordResetSuccess ? true : false}'
             submitLabel='Reset Password'
             processingLabel='Sending…'
             submitHandler='{updatePasswordHandler}'
@@ -98,7 +96,7 @@
               InputPassword(
                 label="Password" 
                 name='password' 
-                bind:value='{password}' 
+                bind:value='{newPassword}' 
                 autocomplete='new-password' 
                 newPassword='{true}'
                 required
@@ -111,7 +109,7 @@
                 autocomplete='new-password' 
                 required 
                 showRequiredHint='{false}'
-                pattern='{password}'
+                pattern='{newPassword}'
                 patternMessage='New passwords do not match.'
                 validateOnInput='{false}'
                 )

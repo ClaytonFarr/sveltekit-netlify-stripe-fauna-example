@@ -2,7 +2,7 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { notifications } from '$lib/components/notifications/store.js';
-	import * as http from '$lib/utils/http';
+	import * as http from '$lib/utils/http-methods';
 	import { Input, InputPassword } from '$lib/components/forms';
 	import IconTrash from '$lib/components/icons/outline-trash.svelte';
 	import SingleValueFormContainer from '$lib/components/SingleValueFormContainer.svelte';
@@ -19,21 +19,16 @@
 		password = null;
 	};
 	const deleteIdentityHandler = async () => {
-		// double-check if request confirmed
 		const confirmed = deletePassphrase === deleteConfirmation;
 		if (confirmed) {
-			// pass job to 'deleteUser' endpoint
 			try {
 				const request = await http.post('/api/deleteUser', { password });
-				// if unsuccessful
-				if (!request.ok || request.body.error) throw { message: request.body.error };
-				// if successful
+				if (request.error) throw { message: request.error };
 				goto('/deleted?success');
 			} catch (err) {
-				// display request error message
 				notifications.warning({
 					message: 'Unable to Delete',
-					detail: err.message,
+					detail: err.message || null,
 				});
 			}
 		} else if (!confirmed) {
@@ -42,7 +37,6 @@
 				detail: 'Confirm account deletion with passphrase.',
 			});
 		} else {
-			// display invalid request error message
 			notifications.warning({
 				message: 'Unable to Delete',
 				detail: 'Please try again.',

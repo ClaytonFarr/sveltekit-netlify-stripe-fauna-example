@@ -1,31 +1,29 @@
-import * as auth from '$lib/apis/auth-api';
-import * as db from '$lib/apis/db-api';
+import * as http from '$lib/utils/http-methods';
+import * as auth from '$lib/apis/auth-api-methods';
+import * as db from '$lib/apis/db-api-methods';
+import * as cookie from '$lib/utils/cookies';
 import loadStripe from 'stripe';
-import verifyCurrentToken from '$lib/utils/verifyCurrentToken';
-import errorResponse from '$lib/utils/errorResponse';
+import { serverResponse } from '$lib/utils/helpers';
 
 export async function post(request) {
 
   try {
-    // authorize request
     const { token } = request.locals;
-    const accessTokenCheck = await verifyCurrentToken(token);
-
-    // console.log(Date.now(), ': UPDATE EMAIL CONFIRMATION endpoint accessTokenCheck :', accessTokenCheck);
+    const accessTokenCheck = await auth.verifyCurrentToken(token);
+    if(!accessTokenCheck.ok) throw { statusMessage: 'error', errorMessage: 'Unauthorized Session' };
 
     if(accessTokenCheck.ok) {
 
-      // attempt to confirm email change token
+      // Attempt to confirm email change token
       // -------------------------------------------------------------------------------------------
       const { updateToken } = request.body; // #email_change_token value passed to endpoint
-      const confirmEmailChangeToken = await auth.confirmEmailChange(token, updateToken);
+      const emailConfirmation = await auth.confirmEmailChange(token, updateToken);
+      if (emailConfirmation.error) throw { statusMessage: emailConfirmation.statusMessage, errorMessage: emailConfirmation.error, };
 
-      // if confirmEmailChangeToken fails, throw error
-      if (!confirmEmailChangeToken.ok || confirmEmailChangeToken.body.error) throw { status: confirmEmailChangeToken.status, message: confirmEmailChangeToken.body.error, };
-
-      // When an email change has been successfully *requested* previously a 'email_change_sent_at' key is present.
-      // When an email change has been successfully *confirmed* the 'new_email' key is deleted.
-      // Example successful return -
+      // when an email change has been successfully *requested* previously a 'email_change_sent_at' key is present
+      // when an email change has been successfully *confirmed* the 'new_email' key is deleted
+      //
+      // example successful return -
       // 
       // { "id": "some-id-value",
       //   "aud": "",
@@ -39,57 +37,55 @@ export async function post(request) {
       //   "created_at": "2021-01-01T01:00:00Z",
       //   "updated_at": "2021-01-01T01:00:00.000001Z" }
 
-      // Currently testing for success implicitly via confirmEmailChangeToken.ok,
+      // currently testing for success implicitly via confirmEmailChangeToken.ok,
       // existence of 'email_change_sent_at' and absence of 'new_email'.
 
-      // Test email updated successfully
-      const emailChangeRequested = confirmEmailChangeToken.body.email_change_sent_at;
-      const emailChangeConfirmed = !confirmEmailChangeToken.body.new_email;
+      const emailChangeRequested = emailConfirmation.email_change_sent_at;
+      const emailChangeConfirmed = !emailConfirmation.new_email;
       const identityEmailUpdated = (emailChangeRequested && emailChangeConfirmed);
-
-      // throw error if success test fails
-      if (!identityEmailUpdated) throw { status: 500, message: 'Unable to update email address.', };
-      // else, continue
-
-      // attempt to update email in Stripe
+      if (!identityEmailUpdated) throw { statusMessage: emailConfirmation.statusMessage, errorMessage: 'Unable to update email address.', };
+      
+      // Attempt to update email in Stripe
       // -------------------------------------------------------------------------------------------
-      const netlifyId = accessTokenCheck?.body?.id;
+      const netlifyId = accessTokenCheck.id;
+      const newEmail = emailConfirmation.email;
       const stripeId = await db.getStripeId(netlifyId);
-      const newEmail = confirmEmailChangeToken?.body?.email;
       const stripe = await loadStripe(process.env['STRIPE_SECRET_KEY']);
-      let updateStripeCustomerEmail;
-      if(netlifyId && newEmail) updateStripeCustomerEmail = await stripe.customers.update(stripeId, {email: newEmail}); // https://stripe.com/docs/api/customers/update
+      let updateStripeEmail;
+      if(netlifyId && newEmail) updateStripeEmail = await stripe.customers.update(stripeId, {email: newEmail}); // https://stripe.com/docs/api/customers/update
       // if attempt fails report error on server
-      if (updateStripeCustomerEmail.email !== newEmail) console.log(Date.now(), '💥 UPDATE EMAIL CONFIRMATION : Update Stripe Customer Email Unsuccessful - ', updateStripeCustomerEmail);
+      if (updateStripeEmail.email !== newEmail) console.log(new Date().toISOString(), '💥 UPDATE EMAIL CONFIRMATION : Update Stripe Customer Email unsuccessful :', updateStripeEmail);
     
-      // attempt to update JWT cookie to make updated claims (email address) available to UI
-      // (note: using inline fetch here since http helper methods used elsewhere are not configured to work with endpoint to endpoint requests yet)
+      // Attempt to update JWT cookie to make updated claims (email address) available to UI
+      // (JWT will not be passed as cookie from this endpoint to 'refreshToken', therefore needs to be passed in http.post body)
       // -------------------------------------------------------------------------------------------
-      const newTokenRequest = await fetch(`${process.env['URL']}/api/refreshToken`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify({ token })
-      } );
-      const newTokenRequestData = await newTokenRequest.json();
+      const newTokenResponse = await http.post(`${process.env['URL']}/api/refreshToken`, { token });
       // if request fails report error on server and complete return without trying to update JWT cookie
-      if (!newTokenRequest.ok || newTokenRequestData.body?.error) {
-        console.log(Date.now(), '💥 UPDATE EMAIL CONFIRMATION : Refresh Token & JWT Cookie Unsuccessful - ', newTokenRequest);
-        return {
-          ok: true,
-          status: 200,
-          body: { jwtUpdated: false },
-        };
+      if (newTokenResponse.error) {
+        console.log(new Date().toISOString(), '💥 UPDATE EMAIL CONFIRMATION : Refresh Token & JWT Cookie unsuccessful :', newTokenResponse);
+        return serverResponse(200, true, {
+          jwtUpdated: false,
+        });
       }
-      // else, complete return with new JWT cookie
-      const newToken = newTokenRequestData.token;
+      // else, return response that also set identity JWT cookie
+      const newToken = newTokenResponse.token;
       const body = { jwtUpdated: true, newEmail };
-      return auth.setIdentityCookies(newTokenRequest.status, body, newToken);
-    } else {
-      throw { status: 401, message: 'Unauthorized Request', };
+      return cookie.setIdentityCookies(body, newToken);
+
     }
   
   } catch (error) {
-    return errorResponse(error, 'updateEmailConfirm');
+    let { statusMessage, errorMessage } = error;
+    if (!errorMessage) console.log(new Date().toISOString(), "💥 'updateEmailConfirm' endpoint unsuccessful : error.message :", error.message);
+
+    if (errorMessage?.toLowerCase().includes('bad request')) {
+      errorMessage = 'Unable to confirm email update token.'
+    }
+
+    return serverResponse(200, false, {
+      statusMessage: statusMessage || 'error',
+      error: errorMessage || 'Unsuccessful Request',
+    });
   }
 
 }

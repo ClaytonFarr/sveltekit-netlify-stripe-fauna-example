@@ -15,12 +15,13 @@
 
 // This function must be called with a valid bearer token authorization header.
 
-
 const fetch = require('node-fetch');
 
 
+// -----------------------------------------------------------------------------
 // Delete-User serverless function
 // -----------------------------------------------------------------------------
+
 exports.handler = async (event, context) => {
 
   const { identity, user } = context.clientContext;
@@ -29,36 +30,52 @@ exports.handler = async (event, context) => {
   // 'user' will not be present if bearer token missing or invalid
 
   if (user) {
-    const userId = user.sub;
-    const userUrl = `${identity.url}/admin/users/{${userId}}`;
-    const adminAuthHeader = `Bearer ${identity.token}`;
 
     try {
-      return fetch(userUrl, {
+      const userId = user.sub;
+      const userUrl = `${identity.url}/admin/users/{${userId}}`;
+      const adminAuthHeader = `Bearer ${identity.token}`;
+
+      const identityResponse = await fetch(userUrl, {
         method: 'DELETE',
         headers: { Authorization: adminAuthHeader },
-      })
-        .then((response) => {
-          // console.log(Date.now(), ': DELETE IDENTITY function response :', response);
-          return response.json();
-        })
-        .then((data) => {
-          // console.log(Date.now(), '✅ DELETE IDENTITY function Successful :', data);
-          return { statusCode: 204 };
-        })
-        .catch((error) => {
-          // console.log(Date.now(), ': DELETE IDENTITY function error :', error);
-          return { 
-            statusCode: 500,
-            body: `Internal Server Error: ${error}`,
-           };
-        });
+      });
+      const deleteIdentityUser = await identityResponse.json();
+
+      // successful deletion should return an empty object in deleteIdentityUser
+      if (!identityResponse.ok || Object.entries(deleteIdentityUser).length > 0) {
+        console.log(new Date().toISOString(), '💥 DELETE-IDENTITY function unsuccessful :', identityResponse);
+        throw { statusMessage: `error (${identityResponse.status})`, errorMessage: 'Unable to delete identity.'  }
+      }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          statusMessage: 'success',
+          ...deleteIdentityUser,
+        }),
+      }
+
     } catch (error) {
-      console.log(Date.now(), '💥 DELETE IDENTITY function Unsuccessful :', error);
-      return error;
+      const { statusMessage, errorMessage } = error;
+      console.log(new Date().toISOString(), '💥 DELETE-IDENTITY function : Caught Error :', error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({
+          statusMessage,
+          error: errorMessage,
+        }),
+      }
     }
 
   } else {
-    return { statusCode: 401 };
-  }
+    // if authorization check fails
+    return {
+      statusCode: 401,
+      body: JSON.stringify({
+        statusMessage: 'error',
+        error: 'Unauthorized Request'
+      }),
+    }
+}
 };

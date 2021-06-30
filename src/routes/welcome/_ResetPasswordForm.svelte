@@ -1,9 +1,11 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	import * as http from '$lib/utils/http';
-	import autofocusFirstChildInput from '$lib/utils/autofocusFirstChildInput';
+	import * as http from '$lib/utils/http-methods';
+	import { autoFocusFirstChildInput } from '$lib/utils/helpers';
 	import { Form, Input } from '$lib/components/forms';
-	import FormContainer from './_FormContainer.svelte';
+	import FormContainer from './_WelcomeFormContainer.svelte';
+
+	export let loggedInUserResettingPassword = false;
 
 	let email = '';
 	let error = null;
@@ -18,12 +20,10 @@
 		dispatch('cancel');
 	};
 	const resetHandler = async () => {
-		error = null; // reset any error
+		error = null; // reset any errors
 		try {
 			const data = await http.post('/api/passwordRecoveryRequest', { email });
-			// if unsuccessful
-			if (!data.ok || data.body.error) throw { message: data.body.error };
-			// if successful
+			if (data.error) throw { message: data.error };
 			dispatch('success');
 		} catch (err) {
 			error = [err.message];
@@ -47,13 +47,13 @@
 				processingLabel='Sending…'
 				submitHandler='{resetHandler}'
 				tertiaryAction='{true}'
-				tertiaryActionLabel='Return to Sign In'
-				tertiaryActionType='handler'
-				tertiaryActionLink='{cancelHandler}'
+				tertiaryActionLabel="{loggedInUserResettingPassword ? 'Cancel' : 'Return to Sign In'}"
+				tertiaryActionType="{loggedInUserResettingPassword ? 'href' : 'handler'}"
+				tertiaryActionLink="{loggedInUserResettingPassword ? '/account' : cancelHandler}"
 				formLevelErrors='{error}'
 				)
 
-				div(use:autofocusFirstChildInput).space-y-4
+				div(use:autoFocusFirstChildInput).space-y-4
 
 					Input(
 						label='Email Address'

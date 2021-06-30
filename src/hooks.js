@@ -1,5 +1,5 @@
-import { parseIdentityCookies } from '$lib/apis/auth-api'
-import { parseJwt } from '$lib/utils/helpers'
+import { parseIdentityCookies } from '$lib/utils/cookies';
+import { parseJwt } from '$lib/utils/helpers';
 
 
 // ==============================================================================
@@ -9,7 +9,7 @@ import { parseJwt } from '$lib/utils/helpers'
 export async function handle({ request, resolve }) {
 
   // console.log('=============================================================');
-  // console.log(Date.now(), ': HOOKS handle');
+  // console.log(new Date().toISOString(), ': HOOKS handle');
 
   // parse jwt from cookie in request, if present, and populate locals.user
   const { jwt } = parseIdentityCookies(request);
@@ -24,8 +24,8 @@ export async function handle({ request, resolve }) {
     request.locals.user.authenticated = false;
   }
   
-  // console.log(Date.now(), ': HOOKS handle jwt :', jwt);
-  // console.log(Date.now(), ': HOOKS handle locals.user.authenticated :', request.locals.user.authenticated);
+  // console.log(new Date().toISOString(), ': HOOKS handle jwt :', jwt);
+  // console.log(new Date().toISOString(), ': HOOKS handle locals.user.authenticated :', request.locals.user.authenticated);
 
   // process requested route/endpoint
   const response = await resolve(request);
@@ -48,8 +48,8 @@ export async function handle({ request, resolve }) {
 export function getSession(request) {
 
   // console.log('-------------------------------------------------------------');
-  // console.log(Date.now(), ': HOOKS getSession');
-  // console.log(Date.now(), ': HOOKS getSession locals.user.authenticated :', request.locals.user.authenticated);
+  // console.log(new Date().toISOString(), ': HOOKS getSession');
+  // console.log(new Date().toISOString(), ': HOOKS getSession locals.user.authenticated :', request.locals.user.authenticated);
   
   return {
     user: {

@@ -48,12 +48,12 @@
 				firstInput.focus();
 			}
 		}
-    dispatch('opened');
+		dispatch('opened');
 	};
 	const closeModal = () => {
-    show = false;
-    dispatch('closed');
-  };
+		show = false;
+		dispatch('closed');
+	};
 	const actionHandler = () => {
 		modalAction();
 		closeModal();
@@ -61,10 +61,15 @@
 
 	onMount(() => {
 		const outsideModalClickHandler = (event) => {
-			if (show && !modal.contains(event.target)) show = false;
+			if (show && !modal.contains(event.target)) {
+				show = false;
+			}
 		};
 		const escapeModalHandler = (event) => {
-			if (show && event.key === 'Escape') show = false;
+			if (show && event.key === 'Escape') {
+				show = false;
+				dispatch('closed');
+			}
 		};
 
 		// add listeners when element is added to the DOM
@@ -100,7 +105,7 @@
     // Modal
     +if('show')
       div(
-        class='{pointerEventsClass} modal fixed z-10 inset-0 overflow-y-auto'
+        class='{pointerEventsClass} modal fixed z-50 inset-0 overflow-y-auto'
         aria-labelledby='{modalName}'
         aria-modal='true'
         role='dialog'

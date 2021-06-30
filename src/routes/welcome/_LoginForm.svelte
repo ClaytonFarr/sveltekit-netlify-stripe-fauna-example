@@ -2,10 +2,10 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
-	import * as http from '$lib/utils/http';
-	import autofocusFirstChildInput from '$lib/utils/autofocusFirstChildInput';
+	import * as http from '$lib/utils/http-methods';
+	import { autoFocusFirstChildInput } from '$lib/utils/helpers';
 	import { Form, Input, InputPassword } from '$lib/components/forms';
-	import FormContainer from './_FormContainer.svelte';
+	import FormContainer from './_WelcomeFormContainer.svelte';
 
 	export let successDestination = '/';
 
@@ -31,10 +31,8 @@
 		error = null; // reset any errors
 		try {
 			const data = await http.post('/api/loginUser', { email, password });
-			// if unsuccessful
-			if (!data.ok || data.body.error) throw { message: data.body.error };
-			// if successful, update client state & redirect client to main auth'd page
-			$session.user = data.body.user || {};
+			if (data.error) throw { message: data.error };
+			$session.user = data.user || {};
 			goto(successDestination);
 		} catch (err) {
 			error = [err.message];
@@ -66,7 +64,7 @@
 				formLevelErrors='{error}'
 				)
 
-				div(use:autofocusFirstChildInput).space-y-4
+				div(use:autoFocusFirstChildInput).space-y-4
 
 					Input(
 						label='Email Address'

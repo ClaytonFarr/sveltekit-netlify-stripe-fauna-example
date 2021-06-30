@@ -1,5 +1,5 @@
-import * as auth from '$lib/apis/auth-api';
-import errorResponse from '$lib/utils/errorResponse';
+import * as auth from '$lib/apis/auth-api-methods';
+import { serverResponse } from '$lib/utils/helpers';
 
 export async function post(request) {
 
@@ -7,25 +7,22 @@ export async function post(request) {
   // 'SMTP_MAX_FREQUENCY' setting @ https://github.com/netlify/gotrue/blob/master/README.md#e-mail
 
   try {
-
-    // request reset password email
     const { email } = request.body;
-    const passwordRecoveryRequest = await auth.requestPasswordRecovery(email);
-
-    // console.log(Date.now(), ': REQUEST PASSWORD RECOVERY endpoint passwordRecoveryRequest :', passwordRecoveryRequest);
-
-    // if passwordRecoveryRequest fails throw error
-    if (!passwordRecoveryRequest.ok || passwordRecoveryRequest.body.error) throw { status: passwordRecoveryRequest.status, message: passwordRecoveryRequest.body.error, };
-
-    // else, continue
-    return {
-      ok: true,
-      status: passwordRecoveryRequest.status,
-      body: passwordRecoveryRequest.body,
+    const data = await auth.requestPasswordRecovery(email);
+    if (data.error) {
+      throw { statusMessage: data.statusMessage, errorMessage: data.error, };
     }
+    return serverResponse(200, true);
 
   } catch (error) {
-    return errorResponse(error, 'passwordRecoveryRequest');
+    let { statusMessage, errorMessage } = error;
+    if (errorMessage?.toLowerCase().includes('user not found')) {
+      errorMessage = 'Account not found.'
+    }
+    return serverResponse(200, false, {
+      statusMessage : statusMessage || 'error',
+      error: errorMessage || error.message || 'Unknown error',
+    });
   }
 
 }

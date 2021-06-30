@@ -1,29 +1,23 @@
-import * as auth from '$lib/apis/auth-api';
-import * as db from '$lib/apis/db-api';
-import errorResponse from '$lib/utils/errorResponse';
-import { parseJwt } from '$lib/utils/helpers';
+import * as db from '$lib/apis/db-api-methods';
+import * as auth from '$lib/apis/auth-api-methods';
+import * as cookie from '$lib/utils/cookies';
+import { serverResponse, parseJwt } from '$lib/utils/helpers';
 
 export async function post(request) {
 
   try {
-
-    // attempt to log in user
     const { email, password } = request.body;
-    const loginUserRequest = await auth.loginUser(email, password);
+    const data = await auth.loginUser(email, password);
+    const jwt = data.access_token;
 
-    // console.log(Date.now(), ': LOGIN USER endpoint loginUserRequest :', loginUserRequest);
-
-    // if loginUserRequest fails throw error
-    if (!loginUserRequest.ok || loginUserRequest.body.error) throw { status: loginUserRequest.status, message: loginUserRequest.body.error, };
-    // else, continue
-
-    // if access token doesn't exist in response throw error
-    const jwt = loginUserRequest.body.access_token;
-    if (!jwt) throw { status: loginUserRequest.status, message: loginUserRequest.body.error, };
+    // if error or missing JWT, throw
+    if (data.error || !jwt) {
+      throw { statusMessage: data.statusMessage, errorMessage: data.error, };
+    }
 
     // grab tokens and claims
     const jwtPayload = parseJwt(jwt);
-    const refreshToken = loginUserRequest.body.refresh_token;
+    const refreshToken = data.refresh_token;
     const netlifyId = jwtPayload.sub;
     const body = {
       user: {
@@ -35,13 +29,19 @@ export async function post(request) {
     }
 
     // update user's refresh token
-    await db.saveRefreshToken(netlifyId, refreshToken); // if attempt fails db.saveRefreshToken() method will report error on server
-
-    // set user's identity JWT cookie
-    return auth.setIdentityCookies(loginUserRequest.status, body, loginUserRequest.body.access_token);
+    await db.saveRefreshToken(netlifyId, refreshToken);
+    // return response that also set identity JWT cookie
+    return cookie.setIdentityCookies(body, jwt);
 
   } catch (error) {
-    return errorResponse(error, 'loginUser');
+    let { statusMessage, errorMessage } = error;
+    if (errorMessage?.toLowerCase().includes('no user found')) {
+      errorMessage = 'Account not found or password is invalid.'
+    }
+    return serverResponse(200, false, {
+      statusMessage : statusMessage || 'error',
+      error: errorMessage || error.message || 'Unknown error',
+    });
   }
 
 }

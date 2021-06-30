@@ -1,5 +1,5 @@
 // =============================================================================
-// Custom serverless function for Stripe Subsdcription Updates webhook
+// Custom serverless function for Stripe Subscription Updates webhook
 // =============================================================================
 
 // This is an 'additional_function' instead of a SvelteKit endpoint to
@@ -11,100 +11,77 @@
 
 // NOTE - current logic expects Stripe product price has a value in its 'Price Description'
 //        (shown under 'Additional Options' in Stripe admin UI and referred to as 'nickname' 
-//        in API call) where first word matches desired Netlify Identity role name; e.g. –
+//        in API call) where it's first word matches desired Netlify Identity role name; e.g. –
 //        - Stripe Product : Price : Price Description = 'Pro plan monthly'
 //        - Netlify Identity : User role = 'pro'
-// LATER: update this to a less brittle method of tying plans to roles once have clearer 
+
+// LATER: update this ↑ to a less brittle method of tying plans to roles once have clearer 
 //        understanding of desired relationships between plans and role-based content
 
 const fetch = require('node-fetch');
 const stripe = require('stripe')(process.env['STRIPE_SECRET_KEY']);
 
 
-// Fauna Query Helper Function
-// (including this inline to avoid have to secure a separate function)
 // -----------------------------------------------------------------------------
-async function faunaQuery({ query, variables }) {
-  const faunaUrl = 'https://graphql.fauna.com/graphql';
-  const adminAuthHeader = `Bearer ${process.env['FAUNADB_SERVER_SECRET']}`;
-
-  try {
-    const response = await fetch(faunaUrl, {
-      method: 'POST',
-      headers: { Authorization: adminAuthHeader },
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
-    });
-    const json = await response.json(); 
-    // if response fails throw error
-    if (!response.ok) {
-      let errorMessage = response.statusText;
-      if(json.error_description) errorMessage = json.error_description;
-      if(json.msg) errorMessage = json.msg;
-      console.log(Date.now(), ': DB-API faunaQuery ERROR 1', errorMessage);
-      const errorResponse = { status: response.status, message: errorMessage };
-      throw errorResponse;
-    }
-    // else return
-    return {
-      ok: true,
-      status: response.status || 200,
-      body: json || {},
-    };
-
-  } catch (error) {
-    const errorMessage = error.message || error.toString() || 'Caught error.';
-    return {
-      ok: false,
-      status: error.status || 400,
-      body: { error: errorMessage },
-    };
-  }
-};
-
 // Handle-Subscription-Change serverless function
 // -----------------------------------------------------------------------------
+
 exports.handler = async ({ body, headers }, context) => {
   
   try {
-
-    // Ensure event is legitimate
     const stripeEvent = await stripe.webhooks.constructEvent(
       body,
       headers['stripe-signature'],
       process.env['STRIPE_UPDATES_WEBHOOK_SECRET'],
     );
 
-    // console.log(Date.now(), ': HANDLE SUBSCRIPTION CHANGE function stripeEvent :', stripeEvent);
-    
-    // Exit if this is not a subscription update event
-    if (stripeEvent.type !== 'customer.subscription.updated') return;
-
-    // Retrieve Netlify ID for Stripe Customer that was updated
+    // check Stripe event for subscription
     const subscription = stripeEvent.data.object;
-    const faunaRequest = await faunaQuery({
-      query: `
+    if(!subscription) {
+      console.log(new Date().toISOString(), '💥 HANDLE-SUBSCRIPTION-CHANGE function : stripeEvent subscription empty :', stripeEvent);
+      throw { statusMessage: 'error', errorMessage: stripeEvent.message || 'No Stripe subscription available.' }
+    }
+    if (stripeEvent.type !== 'customer.subscription.updated') {
+      console.log(new Date().toISOString(), '💥 HANDLE-SUBSCRIPTION-CHANGE function : stripeEvent not a subscription update :', stripeEvent);
+      throw { statusMessage: 'error', errorMessage:'Incorrect Stripe event type.' }
+
+    }
+
+    // retrieve Netlify ID for Stripe Customer that was updated
+    const databaseResponse = await fetch('https://graphql.fauna.com/graphql', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${process.env['FAUNADB_SERVER_SECRET']}` },
+      body: JSON.stringify({
+        query: `
           query ($stripeID: ID!) {
             getUserByStripeID(stripeID: $stripeID) {
               netlifyID
             }
           }
         `,
-      variables: {
-        stripeID: subscription.customer,
-      },
+        variables: {
+          stripeID: subscription.customer,
+        },
+      }),
     });
-    const netlifyID = faunaRequest.body.data.getUserByStripeID.netlifyID;
+    const databaseUpdate = await databaseResponse.json();
+    const netlifyID = databaseUpdate.data.getUserByStripeID.netlifyID;
+    if(!databaseResponse.ok || !netlifyID) {
+      console.log(new Date().toISOString(), '💥 HANDLE-SUBSCRIPTION-CHANGE function : Netlify ID retrieval unsuccessful :', databaseResponse);
+      throw { statusMessage: `error (${databaseResponse.status})`, errorMessage: databaseUpdate.errors[0].message || 'Unable to retrieve Netlify Identity ID.'  }
+    }
 
-    // Take first word of the plan name to use as role name
+    // take first word of the plan name to use as role name
     const plan = subscription.items.data[0].price.nickname;
+    if (!plan) {
+      console.log(new Date().toISOString(), '💥 HANDLE-SUBSCRIPTION-CHANGE function : plan name not found :', databaseResponse);
+      throw { statusMessage: 'error', errorMessage: 'Unable to retrieve plan name.'  }
+    }
     const role = plan.split(' ')[0].toLowerCase();
     
-    // Send call to Netlify Identity to update user's role
+    // send call to Netlify Identity to update user's role
     const { identity } = context.clientContext;
-    await fetch(`${identity.url}/admin/users/${netlifyID}`, {
+    const identityResponse = await fetch(`${identity.url}/admin/users/${netlifyID}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${identity.token}`, },
       body: JSON.stringify({
@@ -113,17 +90,29 @@ exports.handler = async ({ body, headers }, context) => {
         },
       }),
     });
+    const identityUpdate = await identityResponse.json();
+    const identityRolesUpdated = identityUpdate.app_metadata.roles[0] === role;
+    if(!identityResponse.ok || !identityRolesUpdated) {
+      console.log(new Date().toISOString(), '💥 HANDLE-SUBSCRIPTION-CHANGE function : update Identity role unsuccessful :', identityResponse);
+      throw { statusMessage: `error (${identityResponse.status})`, errorMessage: 'Unable to update Identity role.'  }
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ received: true }),
+      body: JSON.stringify({
+        statusMessage: 'success',
+        received: true,
+      }),
     };
-
+    
   } catch (error) {
+    console.log(new Date().toISOString(), '💥 HANDLE-SUBSCRIPTION-CHANGE function : Caught Error :', error);
     return {
       statusCode: 400,
-      body: `Webhook Error: ${error.message}`,
+      body: JSON.stringify({
+        statusMessage: 'error',
+        error: `Webhook Error: ${error.message}`,
+      }),
     };
-
   }
 };
