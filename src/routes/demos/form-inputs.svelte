@@ -82,10 +82,10 @@
   div(class="{showDevOutput ? 'pb-48' : ''}")
 
     .prose.mb-10
-      h1(class='!mb-2 !text-3xl') Form input components with customizable browser-based validation.  
+      h1(class='!mb-2 !text-3xl') Svelte form components with customizable browser-based validation.  
       p.text-sm.text-gray-500.leading-6 By default, any validation constraints are evaluated 1) after a user completes their initial entry and then 2) interactively as values are edited in a previously touched field. This behavior can be updated to validate a field on first input and/or on page load.
 
-      ul.text-sm.pb-8.border-b.mb-6
+      ul.text-sm.pb-2
         li: a(href='#text') Text Inputs
         li: a(href='#related') Related Inputs
         li: a(href='#special-string') Special String Inputs
@@ -96,6 +96,8 @@
         li: a(href='#textarea') Textareas
         li: a(href='#selects') Selects
         li: a(href='#buttons') Buttons
+
+      p.text-sm.text-gray-500.leading-6.pb-8.border-b.mb-6 See #[a(href="https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/lib/components/forms/elements") components' code] for configuration options.
 
     Form(
       submitLabel='Send'

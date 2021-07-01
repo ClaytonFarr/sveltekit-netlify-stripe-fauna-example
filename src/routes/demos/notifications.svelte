@@ -35,18 +35,26 @@
 	};
 </script>
 
-<div class="button-group">
-	<button on:click={defaultNotification}>Default</button>
-	<button on:click={infoNotification}>Info</button>
-	<button on:click={successNotification}>Success</button>
-	<button on:click={warningNotification}>Warning</button>
-	<button on:click={dangerNotification}>Danger</button>
-</div>
+<template lang="pug">
 
-<Notifications />
-<!-- <Notifications horizontalPlacement='right' /> -->
-<!-- <Notifications verticalPlacement='bottom' /> -->
-<!-- <Notifications verticalPlacement='bottom' horizontalPlacement='stretch' /> -->
+	.prose.mb-10
+		h1(class='!mb-2 !text-3xl') Svelte notifications component
+		p.text-sm.text-gray-500.leading-6 Displays 1+ notifications with smart defaults and animation. Can prescribe notification location, type, heading and detail content, time on screen, and whether user can dismiss.
+		p.text-sm.text-gray-500.leading-6 See #[a(href="https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/lib/components/notifications") component code] for configuration options.
+		p.text-sm.text-gray-500.leading-6: em Derived from Kev's #[a(href='https://svelte.dev/repl/8c54d499f26e444c874f3e2933b7965c') Notification Toast Custom Store]
+
+	.button-group
+		button(on:click='{defaultNotification}') Default
+		button(on:click='{infoNotification}') Info
+		button(on:click='{successNotification}') Success
+		button(on:click='{warningNotification}') Warning
+		button(on:click='{dangerNotification}') Danger
+
+	Notifications
+	<!-- Notifications(horizontalPlacement='right') -->
+	<!-- Notifications(verticalPlacement='bottom') -->
+	<!-- Notifications(verticalPlacement='bottom' horizontalPlacement='stretch') -->
+</template>
 
 <style>
 	.button-group {
