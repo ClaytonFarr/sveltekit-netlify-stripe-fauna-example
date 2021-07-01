@@ -3,7 +3,7 @@
 Example of code / use cases for potential updates to SvelteKit Netlify Adapter.
 
 - Details at related [Github Issue](https://github.com/sveltejs/kit/issues/1249#issuecomment-846638681)
-- [Demo](https://sk-netlify-example.netlify.app/)
+- [Demo](https://sveltekit-gotrue-stripe-fauna.netlify.app/)
 
 ### Issues Summary
 
