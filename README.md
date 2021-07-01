@@ -2,12 +2,8 @@
 
 ### Utilizing
 
-- [SvelteKit](https://kit.svelte.dev/)
-- [TailwindCSS](https://tailwindcss.com/) & [TailwindUI](https://tailwindui.com/)
-- [Netlify Identity](https://docs.netlify.com/visitor-access/identity/) authentication / [GoTrue](https://github.com/netlify/gotrue)
-- [Stripe](https://stripe.com/) subscriptions & [customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
-- [Fauna](https://fauna.com/) GraphQL database
-- Deployment as serverless app on [Netlify](https://www.netlify.com/) via SvelteKit's [Netlify Adapter](https://github.com/sveltejs/kit/tree/master/packages/adapter-netlify)
+- Details at related [Github Issue](https://github.com/sveltejs/kit/issues/1249#issuecomment-846638681)
+- [Demo](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/)
 
 ### Functionality
 
