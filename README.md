@@ -1,6 +1,6 @@
 ## SaaS Boilerplate Example
 
-### Utilizing
+### Utilizes
 
 - [SvelteKit](https://kit.svelte.dev/)
 - [TailwindCSS](https://tailwindcss.com/) & [TailwindUI](https://tailwindui.com/)
@@ -18,15 +18,15 @@
 - User database - via Fauna
 - [Helper methods](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/apis/db-api-methods.js) to access Fauna GraphQL API without JS client
 - Design system - via Tailwind
-- Configurable [form components]() that utilize flexible, browser-based validation
-- Configurable [modal component]()
-- Configurable [notifications component]()
+- Configurable [form components](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/lib/components/forms) that utilize flexible, browser-based validation
+- Configurable [modal component](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/components/Modal.svelte)
+- Configurable [notifications component](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/lib/components/notifications)
 - Combining of SvelteKit serverless functions (aka endpoints) with [custom Netlify functions](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/additional_functions)
 
 ### Demo
 
-- https://sveltekit-gotrue-stripe-fauna-example.netlify.app
-- At demo, you can -
+- [Demo Site](https://sveltekit-gotrue-stripe-fauna-example.netlify.app)
+- _Kick the tires…_
   - sign up and confirm as a new user
   - login / logout
   - retrieve lost password

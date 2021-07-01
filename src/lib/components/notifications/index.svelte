@@ -1,4 +1,7 @@
 <script>
+  // derived from Kev's 'Notification Toast Custom Store'
+	// https://svelte.dev/repl/8c54d499f26e444c874f3e2933b7965c
+
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
