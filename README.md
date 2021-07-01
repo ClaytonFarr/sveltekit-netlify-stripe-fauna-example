@@ -1,4 +1,8 @@
-## SaaS Boilerplate Example
+A SaaS starter boilerplate with elegant UX to use as reference or point to build upon. 
+
+The focus was creating a serverless app that utilizes modern tooling and is centralized to as few platforms as possible.
+
+There are [a few remaining baseline items](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#outstanding-to-dos) you should considering adding, but hopefully this provides a solid head start if you're choosing to work with these tools or platforms.
 
 ### Utilizes
 
@@ -6,7 +10,7 @@
 - [Netlify Identity](https://docs.netlify.com/visitor-access/identity/) authentication / [GoTrue](https://github.com/netlify/gotrue)
 - [Stripe](https://stripe.com/) subscriptions & [customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
 - [Fauna](https://fauna.com/) GraphQL database
-- [Tailwind](https://tailwindcss.com/) & [Tailwind UI](https://tailwindui.com/)
+- [Tailwind](https://tailwindcss.com/)
 - [SveltePreprocess](https://github.com/sveltejs/svelte-preprocess) for [Pug](https://pugjs.org/api/getting-started.html) markup
 - Deployment as serverless app on [Netlify](https://www.netlify.com/) via SvelteKit's [Netlify Adapter](https://github.com/sveltejs/kit/tree/master/packages/adapter-netlify)
 
@@ -19,7 +23,7 @@
 - Subscription billing and management - via Stripe
 - User database - via Fauna
 - [Helper methods](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/apis/db-api-methods.js) to access Fauna GraphQL API without JS client
-- Responsive layouts & elements - via Tailwind UI & custom
+- Responsive layouts
 - Configurable color system - through Tailwind
 - Configurable [form components](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/demos/form-inputs) that utilize flexible, browser-based validation
 - Configurable [modal component](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/demos/modal)
@@ -38,14 +42,59 @@
   - manage subscription & billing method
   - delete account
 
+### Outstanding To Dos
+
+There are a few areas I didn't had time to tie up in this repo, but would recommend looking into –
+
+- add measures to sanitize user-entered data at endpoints ([example](https://linguinecode.com/post/validate-sanitize-user-input-javascript))
+- add measures to secure JWT cookie against [CSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery) attacks ([details](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html); look for modern simpler fixes with JWT cookies & serverless architectures)
+- ensure [HTTP security headers](https://owasp.org/www-project-secure-headers/) are set properly to prevent [common security issues](https://securityheaders.com/)
+- add Terms of Service content & agreement (checkbox) at sign-up and save election to Fauna database when creating user
+- to improve UX, add messaging when a user's session expires (see `sessionExpired` flags in code for start of this)
+- to improve UX, add functionality to refresh user's JWT cookie before expiration during an active session (see `touchTime` in code for start of this)
+- add views and UX to handle attempted logins from accounts with cancelled or paused subscriptions
+- implement UX/UI testing library at this point, before app grows (e.g. [Cypress](https://docs.cypress.io/guides/overview/why-cypress))
+- test app's current accessibility, GDPR compliance, and performance
+- configure [Netlify Build Plugins](https://www.netlify.com/products/build/plugins/) to help automate and regulate any requirements you care about
+- test [Netlify Analytics](https://www.netlify.com/products/analytics/) with application to see if it's worth utilizing
+
+### Random Details
+
+#### Accommodating custom Netlify functions
+
+The current Netlify Adapter has 2 primary limitations:
+
+1. Endpoints do not have access to `context.clientContext` data. This contains information needed to interact with services like Netlify Identity for admin actions. [Details](https://docs.netlify.com/functions/functions-and-identity/)
+2. Netlify triggers some functionality per specifically named functions (e.g. post user sign-up). Endpoint 'functions' are currently aggregated into a single `render` function, preventing specifically named endpoints/functions from being available post build. [Details](https://docs.netlify.com/functions/trigger-on-events/)
+
+_Current Workaround_
+
+- For functionality that requires `context.clientContext` data, create a separate, custom serverless function that is copied post build into the final `functions` directory (via package.json script):
+  - _Example 1_: `/src/additional_functions/delete-identity.js` (a function called explicitly by SK endpoints)
+  - _Example 2_: `/src/additional_functions/handle-subscription-change.js` (a webhook triggered by an external event [Stripe subscription update])
+- For specifically named files that are triggered by events, also create a separate custom serverless function that is copied post build into the final `functions` directory:
+  - _Example_: `/src/additional_functions/identity-signup.js` (function called automatically when a new user completes sign-up process)
+
+#### Safe JWT cookie authentication
+
+To add...
+
+#### Utilizing Netlify Identity (GoTrue) sans client Javascript
+
+To add...
+
+#### Browser-based 'constraint' form validation
+
+To add...
+
+#### Injecting custom color sets into Tailwind
+
+To add...
+
+
 ---
 
 ### How-To Implement
-
-<details>
-<summary>Details...</summary>
-
-&nbsp;
 
 At time of publishing, current versions in use are -
 
@@ -176,5 +225,3 @@ To implement a fully working copy of this repo, follow the steps below –
       - most actions are available locally but some will create temporary false errors. For example, when logging in a user that exists in Netlify Identity you may see an 'Unable to Process' message and a 405 network response. This may be an issue with Netlify Identity & Netlify Dev. Repeat the action 1-2 times and it will proceed normally.
       - to login in as user locally, user must exist in Netlify Identity (i.e. have signed up via locally run site or production site)
       - confirmation emails will link to the production site
-
-</details>
