@@ -1,5 +1,4 @@
 <script context="module">
-	// TODO: check that all client and unnecessary server console logs are silenced
 	export async function load({ session }) {
 		// redirect un-authenticated visitors
 		if (!session.user.authenticated) {

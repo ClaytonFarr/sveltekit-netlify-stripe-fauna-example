@@ -5,7 +5,7 @@
 		const updatingEmailAddress = page.query.toString().includes('update-email');
 		const emailUpdated = page.query.has('email-updated');
 		// TODO: add flag to check for sessions that timed out (JWT cookie expired)
-		const sessionExpired = false;
+		// const sessionExpired = false;
 
 		// redirect authenticated visitors
 		if (session.user.authenticated && !loggedInUserResettingPassword) {
@@ -19,7 +19,7 @@
 			props: {
 				loggedInUserResettingPassword,
 				updatingEmailAddress,
-				sessionExpired,
+				// sessionExpired,
 				emailUpdated,
 			},
 		};
@@ -40,8 +40,8 @@
 
 	export let loggedInUserResettingPassword;
 	export let updatingEmailAddress;
-	export let sessionExpired;
 	export let emailUpdated;
+	// export let sessionExpired;
 
 	const businessName = import.meta.env.VITE_BUSINESS_NAME;
 	let login = true;
@@ -66,7 +66,6 @@
 			goto('/');
 		} catch (err) {
 			goto('/welcome');
-			// TODO: update UI to handle this failure more elegantly
 		}
 	};
 	// confirm new account, when a token is present
@@ -85,15 +84,15 @@
 	// ----------------------------------------------------------------------------------------
 	// Users that had session expire / time out
 	// ----------------------------------------------------------------------------------------
-	if (sessionExpired) {
-		// display messaging to orient user
-		setTimeout(() => {
-			notifications.info({
-				message: 'Signed Out',
-				detail: 'Your session has expired, please sign in again.',
-			});
-		}, 300);
-	}
+	// if (sessionExpired) {
+	// 	// display messaging to orient user
+	// 	setTimeout(() => {
+	// 		notifications.info({
+	// 			message: 'Signed Out',
+	// 			detail: 'Your session has expired, please sign in again.',
+	// 		});
+	// 	}, 300);
+	// }
 
 	// ----------------------------------------------------------------------------------------
 	// Logged-out users that are confirming an email address change

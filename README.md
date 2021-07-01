@@ -1,37 +1,60 @@
-## Reference Repo for SvelteKit + Netlify Adapter
+## SaaS Boilerplate Example
 
-Example of code / use cases for potential updates to SvelteKit Netlify Adapter.
+### Utilizing
 
-- Details at related [Github Issue](https://github.com/sveltejs/kit/issues/1249#issuecomment-846638681)
-- [Demo](https://sk-netlify-example.netlify.app/)
+- [SvelteKit](https://kit.svelte.dev/)
+- [TailwindCSS](https://tailwindcss.com/) & [TailwindUI](https://tailwindui.com/)
+- [Netlify Identity](https://docs.netlify.com/visitor-access/identity/) authentication / [GoTrue](https://github.com/netlify/gotrue)
+- [Stripe](https://stripe.com/) subscriptions & [customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
+- [Fauna](https://fauna.com/) GraphQL database
+- Deployment as serverless app on [Netlify](https://www.netlify.com/) via SvelteKit's [Netlify Adapter](https://github.com/sveltejs/kit/tree/master/packages/adapter-netlify)
 
-### Issues Summary
+### Functionality
 
-Current Netlify Adapter has 2 primary limitations:
+- Authentication - via JWT cookie & Netlify Identity / GoTrue
+- Authentication [email templates](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/auth_email_templates)
+- [Helper methods](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/apis/auth-api-methods.js) to access GoTrue API without JS client
+- Subscription billing and management - via Stripe
+- User database - via Fauna
+- [Helper methods](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/apis/db-api-methods.js) to access Fauna GraphQL API without JS client
+- Design system - via Tailwind
+- Configurable [form components]() that utilize flexible, browser-based validation
+- Configurable [modal component]()
+- Configurable [notifications component]()
+- Combining of SvelteKit serverless functions (aka endpoints) with [custom Netlify functions](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/additional_functions)
 
-1. Endpoints do not have access to `context.clientContext` data. This contains information needed to interact with services like Netlify Identity for admin actions. [Details](https://docs.netlify.com/functions/functions-and-identity/)
-2. Netlify triggers some functionality per specifically named functions (e.g. post user sign-up). Endpoint 'functions' are currently aggregated into a single `render` function, preventing specifically named endpoints/functions from being available post build. [Details](https://docs.netlify.com/functions/trigger-on-events/)
+### Demo
 
-### Current Workarounds
+- https://sveltekit-gotrue-stripe-fauna-example.netlify.app
+- At demo, you can -
+  - sign up and confirm as a new user
+  - login / logout
+  - retrieve lost password
+  - update email address
+  - update password
+  - manage subscription & billing method
+  - delete account
 
-- For functionality that requires `context.clientContext` data, create a separate, custom serverless function that is copied post build into the final `functions` directory (via package.json script):
-  - _Example 1_: `/src/additional_functions/delete-identity.js` (a function called explicitly by SK endpoints)
-  - _Example 2_: `/src/additional_functions/handle-subscription-change.js` (a webhook triggered by an external event [Stripe subscription update])
-- For specifically named files that are triggered by events, also create a separate custom serverless function that is copied post build into the final `functions` directory:
-  - _Example_: `/src/additional_functions/identity-signup.js` (function called automatically when a new user completes sign-up process)
+---
 
-### Package versions in use at time of writing:
+### How-To Implement Repo
+
+<details>
+<summary>Details...</summary>
+
+
+At time of publishing, current versions in use are -
 
 - **@sveltejs/kit** 1.0.0-next.115
 - **@sveltejs/adapter-netlify** 1.0.0-next.17
 
-====================================================================
+If things don't work or project cannot build successfully, either
+- A) double-check there have not been any breaking changes in SvelteKit [changelog](https://github.com/sveltejs/kit/blob/master/packages/kit/CHANGELOG.md) or Netlify Adapter [changelog](https://github.com/sveltejs/kit/blob/master/packages/adapter-netlify/CHANGELOG.md), or 
+- B) update package.json to use the versions above, and work forward from there.
 
-### Steps to Implement Repo
+---
 
-_This repo is an in-progress example of a larger project that has several moving parts and integrations (Netlify Identity for authentication, Fauna DB for user data, Stripe for subscription plans and management, Tailwind CSS/UI)._
-
-To implement a fully working copy of it, follow the steps below –
+To implement a fully working copy of this repo, follow the steps below –
 
 1. Create accounts if needed for -
 
@@ -151,3 +174,5 @@ To implement a fully working copy of it, follow the steps below –
       - most actions are available locally but some will create temporary false errors. For example, when logging in a user that exists in Netlify Identity you may see an 'Unable to Process' message and a 405 network response. This may be an issue with Netlify Identity & Netlify Dev. Repeat the action 1-2 times and it will proceed normally.
       - to login in as user locally, user must exist in Netlify Identity (i.e. have signed up via locally run site or production site)
       - confirmation emails will link to the production site
+
+</details>
