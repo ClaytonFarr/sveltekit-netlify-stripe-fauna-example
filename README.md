@@ -53,7 +53,8 @@ There are a few areas I didn't had time to tie up in this repo, but would recomm
 - to improve UX, add messaging when a user's session expires (see `sessionExpired` flags in code for start of this)
 - to improve UX, add functionality to refresh user's JWT cookie before expiration during an active session (see `touchTime` in code for start of this)
 - add views and UX to handle attempted logins from accounts with cancelled or paused subscriptions
-- implement UX/UI testing library at this point, before app grows (e.g. [Cypress](https://docs.cypress.io/guides/overview/why-cypress))
+- implement UX/UI testing library at this point, before app grows further (e.g. [Cypress](https://www.cypress.io/))
+- implement a more robust logging & monitoring solution (beyond current server console.logs), before app grows further 
 - test app's current accessibility, GDPR compliance, and performance
 - configure [Netlify Build Plugins](https://www.netlify.com/products/build/plugins/) to help automate and regulate any requirements you care about
 - test [Netlify Analytics](https://www.netlify.com/products/analytics/) with application to see if it's worth utilizing
@@ -77,19 +78,19 @@ _Current Workaround_
 
 #### Safe JWT cookie authentication
 
-To add...
+...
 
 #### Utilizing Netlify Identity (GoTrue) sans client Javascript
 
-To add...
+...
 
 #### Browser-based 'constraint' form validation
 
-To add...
+...
 
 #### Injecting custom color sets into Tailwind
 
-To add...
+...
 
 
 ---
