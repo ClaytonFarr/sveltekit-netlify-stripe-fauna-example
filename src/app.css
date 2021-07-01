@@ -13,14 +13,14 @@
 
 :root {
 	/* brand color variants */
-	--color-brand-lightest: 48, 100%, 96%; /* currently matches TW's 'yellow 50', #FFFBEB */
-	--color-brand-light: 46, 97%, 65%; /* currently matches TW's 'yellow 300', #FCD34D */
-	--color-brand-default: 43, 96%, 56%; /* currently matches TW's 'yellow 400', #FBBF24 */
-	--color-brand-dark: 32, 95%, 44%; /* currently matches TW's 'yellow 600', #D97706 */
+	--color-brand-lightest: 48, 100%, 96%; /* currently matches Tailwind 'yellow 50', #FFFBEB */
+	--color-brand-light: 46, 97%, 65%; /* currently matches Tailwind 'yellow 300', #FCD34D */
+	--color-brand-default: 43, 96%, 56%; /* currently matches Tailwind 'yellow 400', #FBBF24 */
+	--color-brand-dark: 32, 95%, 44%; /* currently matches Tailwind 'yellow 600', #D97706 */
 
 	/* action color variants */
-	--color-action-default: 243, 75%, 59%; /* currently matches TW's 'indigo 600', #4F46E5 */
-	--color-action-hover: 239, 84%, 67%; /* currently adjusted from TW's 'indigo 500', #6366F1 */
-	--color-action-focus: 245, 58%, 51%; /* currently matches TW's 'indigo 700', #4338CA */
-	--color-action-highlight: 226, 100%, 97%; /* currently adjusted from TW's 'indigo 50', #EEF2FF */
+	--color-action-default: 243, 75%, 59%; /* currently matches Tailwind 'indigo 600', #4F46E5 */
+	--color-action-hover: 239, 84%, 67%; /* currently adjusted from Tailwind 'indigo 500', #6366F1 */
+	--color-action-focus: 245, 58%, 51%; /* currently matches Tailwind 'indigo 700', #4338CA */
+	--color-action-highlight: 226, 100%, 97%; /* currently adjusted from Tailwind 'indigo 50', #EEF2FF */
 }

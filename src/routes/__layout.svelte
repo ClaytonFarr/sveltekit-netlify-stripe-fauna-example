@@ -15,21 +15,22 @@
 <script>
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
-	import { touchTime } from '$lib/store.js';
+	// import { touchTime } from '$lib/store.js';
 	import AppHeader from '$lib/components/AppHeader.svelte';
 	import Notifications from '$lib/components/notifications/index.svelte'
 	import '../app.css';
 
 	const businessName = import.meta.env.VITE_BUSINESS_NAME;
 
+	// TODO: finish 'touchTime' functionality for refreshing JWT token in background for active sessions
 	// update touchTime on page load
-	onMount(() => ($touchTime = Date.now()));
+	// onMount(() => ($touchTime = Date.now()));
 
 	// update touchTime on each user interaction
-	const updateTouchTime = () => ($touchTime = Date.now());
+	// const updateTouchTime = () => ($touchTime = Date.now());
 </script>
 
-<svelte:window on:click={updateTouchTime} />
+<!-- <svelte:window on:click={updateTouchTime} /> -->
 
 <template lang="pug">
 

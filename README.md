@@ -3,24 +3,27 @@
 ### Utilizes
 
 - [SvelteKit](https://kit.svelte.dev/)
-- [TailwindCSS](https://tailwindcss.com/) & [TailwindUI](https://tailwindui.com/)
 - [Netlify Identity](https://docs.netlify.com/visitor-access/identity/) authentication / [GoTrue](https://github.com/netlify/gotrue)
 - [Stripe](https://stripe.com/) subscriptions & [customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
 - [Fauna](https://fauna.com/) GraphQL database
+- [Tailwind](https://tailwindcss.com/) & [Tailwind UI](https://tailwindui.com/)
+- [SveltePreprocess](https://github.com/sveltejs/svelte-preprocess) for [Pug](https://pugjs.org/api/getting-started.html) markup
 - Deployment as serverless app on [Netlify](https://www.netlify.com/) via SvelteKit's [Netlify Adapter](https://github.com/sveltejs/kit/tree/master/packages/adapter-netlify)
 
 ### Functionality
 
 - Authentication - via JWT cookie & Netlify Identity / GoTrue
 - Authentication [email templates](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/auth_email_templates)
+- Authentication & account management UX
 - [Helper methods](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/apis/auth-api-methods.js) to access GoTrue API without JS client
 - Subscription billing and management - via Stripe
 - User database - via Fauna
 - [Helper methods](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/apis/db-api-methods.js) to access Fauna GraphQL API without JS client
-- Design system - via Tailwind
-- Configurable [form components](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/lib/components/forms) that utilize flexible, browser-based validation
-- Configurable [modal component](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/blob/master/src/lib/components/Modal.svelte)
-- Configurable [notifications component](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/lib/components/notifications)
+- Responsive layouts & elements - via Tailwind UI & custom
+- Configurable color system - through Tailwind
+- Configurable [form components](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/demos/form-inputs) that utilize flexible, browser-based validation
+- Configurable [modal component](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/demos/modal)
+- Configurable [notifications component](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/demos/notifications)
 - Combining of SvelteKit serverless functions (aka endpoints) with [custom Netlify functions](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example/tree/master/src/additional_functions)
 
 ### Demo

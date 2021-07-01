@@ -161,7 +161,7 @@
         IconMail
 
       svelte:fragment(slot="modalText")
-        p You'll recieve a confirmation message at your new email address.
+        p You'll receive a confirmation message at your new email address.
 
       svelte:fragment(slot="modalInputs")
         Input(

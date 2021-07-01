@@ -19,10 +19,10 @@
 	export let affordanceButtonClasses = '';
 
 	export let affordanceText = 'open'; // applicable when affordanceIsButton = false
-	export let affordanceTextClasses = '';
+	export let affordanceTextClasses = 'underline text-action cursor-pointer';
 
 	export let modalHeading = 'Modal Heading';
-	export let modalActionLabel = 'Button Label';
+	export let modalActionLabel = 'Confirm';
 	export let modalAction = null;
 	export let modalAlternativeAction = null;
 	export let modalAlternativeActionLabel = null;
