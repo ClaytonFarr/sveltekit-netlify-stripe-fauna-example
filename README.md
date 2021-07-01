@@ -2,8 +2,12 @@
 
 ### Utilizing
 
-- Details at related [Github Issue](https://github.com/sveltejs/kit/issues/1249#issuecomment-846638681)
-- [Demo](https://sveltekit-gotrue-stripe-fauna-example.netlify.app/)
+- [SvelteKit](https://kit.svelte.dev/)
+- [TailwindCSS](https://tailwindcss.com/) & [TailwindUI](https://tailwindui.com/)
+- [Netlify Identity](https://docs.netlify.com/visitor-access/identity/) authentication / [GoTrue](https://github.com/netlify/gotrue)
+- [Stripe](https://stripe.com/) subscriptions & [customer portal](https://stripe.com/docs/billing/subscriptions/customer-portal)
+- [Fauna](https://fauna.com/) GraphQL database
+- Deployment as serverless app on [Netlify](https://www.netlify.com/) via SvelteKit's [Netlify Adapter](https://github.com/sveltejs/kit/tree/master/packages/adapter-netlify)
 
 ### Functionality
 
@@ -33,11 +37,12 @@
 
 ---
 
-### How-To Implement Repo
+### How-To Implement
 
 <details>
 <summary>Details...</summary>
 
+&nbsp;
 
 At time of publishing, current versions in use are -
 
@@ -47,8 +52,6 @@ At time of publishing, current versions in use are -
 If things don't work or project cannot build successfully, either
 - A) double-check there have not been any breaking changes in SvelteKit [changelog](https://github.com/sveltejs/kit/blob/master/packages/kit/CHANGELOG.md) or Netlify Adapter [changelog](https://github.com/sveltejs/kit/blob/master/packages/adapter-netlify/CHANGELOG.md), or 
 - B) update package.json to use the versions above, and work forward from there.
-
----
 
 To implement a fully working copy of this repo, follow the steps below –
 
