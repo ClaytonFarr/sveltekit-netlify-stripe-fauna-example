@@ -5,11 +5,11 @@ The focus here was to create a serverless app that utilizes modern tooling, infr
 There are [a few remaining baseline items](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#outstanding-to-dos) you should considering adding, but hopefully this provides a solid head start if you're choosing to work with these tools or platforms.
 
 - [Tools & Platforms](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#tools--platforms)
-- [Current Functionality](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#functionality)
+- [Functionality](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#functionality)
 - [Demo](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#demo)
 - [Suggested Additions](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#suggested-additions)
 - [Interesting Bits](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#interesting-bits)
-- [Implementation Steps](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#how-to-implement)
+- [Implementation Steps](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#implementation-steps)
 
 ---
 
