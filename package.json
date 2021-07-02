@@ -1,7 +1,7 @@
 {
-	"name": "sveltekit-netlifyidentity-auth",
-	"description": "Complete authentication management solution (UX, UI, functionality) for SvelteKit and Netlify Identity (GoTrue). Built with Svelte, TailwindCSS, and Pug - and to be deployed on Netlify",
-	"version": "0.0.1",
+	"name": "sveltekit-netlify-stripe-fauna-example",
+	"description": "SaaS boilerplate (UX, UI, functionality) for SvelteKit, Netlify Identity (GoTrue), Stripe, and Fauna. Built with Svelte, Tailwind, and Pug - and to be deployed as a serverless application on Netlify",
+	"version": "1.0",
 	"comments": {
 		"custom-functions": "Netlify Identity requires access to additional data within serverless functions (from context.clientContext) to perform admin functionality (e.g. updating/deleting users). At the time of writing, this is not yet available natively within SvelteKit endpoints. This is being worked around currently by creating these admin functions separately, in the format Netlify expects (https://docs.netlify.com/functions/functions-and-identity/), add appended to the final `functions`directory at build time.",
 		"custom-functions-directory": "The current project structure presumes a `src/additional_functions` directory exists for custom serverless functions.",

@@ -116,7 +116,7 @@
 	}
 
 	// ----------------------------------------------------------------------------------------
-	// Users who successfully udpated email but had to log out/in to renew JWT claims
+	// Users who successfully updated email but had to log out/in to renew JWT claims
 	// ----------------------------------------------------------------------------------------
 	if (emailUpdated) {
 		// display messaging to orient user
