@@ -4,16 +4,16 @@ The focus here was to create a serverless app that utilizes modern tooling, infr
 
 There are [a few remaining baseline items](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#outstanding-to-dos) you should considering adding, but hopefully this provides a solid head start if you're choosing to work with these tools or platforms.
 
-- [Tooling & Platforms](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#utilizes)
+- [Tools & Platforms](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#tools-and-platforms)
 - [Current Functionality](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#functionality)
 - [Demo](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#demo)
-- [Suggested Additions](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#outstanding-to-dos)
-- [Interesting Bits](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#random-details)
+- [Suggested Additions](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#suggested-additions)
+- [Interesting Bits](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#interesting-bits)
 - [Implementation Steps](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#how-to-implement)
 
 ---
 
-### Utilizes
+### Tools & Platforms
 
 - [SvelteKit](https://kit.svelte.dev/)
 - [Netlify Identity](https://docs.netlify.com/visitor-access/identity/) authentication / [GoTrue](https://github.com/netlify/gotrue)
@@ -51,7 +51,7 @@ There are [a few remaining baseline items](https://github.com/ClaytonFarr/svelte
   - manage subscription & billing method
   - delete account
 
-### Outstanding To Dos
+### Suggested Additions
 
 There are a few areas I didn't had time to tie up in this repo, but would recommend looking into –
 
@@ -68,7 +68,7 @@ There are a few areas I didn't had time to tie up in this repo, but would recomm
 - configure [Netlify Build Plugins](https://www.netlify.com/products/build/plugins/) to help automate and regulate any requirements you care about
 - test [Netlify Analytics](https://www.netlify.com/products/analytics/) with application to see if it's worth utilizing
 
-### Random Details
+### Interesting Bits
 
 #### Accommodating custom Netlify functions
 
@@ -153,7 +153,7 @@ Once defined they cane be used the same way you would use Tailwind's built in co
 
 ---
 
-### How-To Implement
+### Implementation Steps
 
 At time of publishing, current versions in use are -
 
