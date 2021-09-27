@@ -2,7 +2,7 @@ A SaaS starter boilerplate with elegant UX to use as reference or point to build
 
 The focus here was to create a serverless app that utilizes modern tooling, infrastructure, and is centralized to as few platforms/expertise as possible.
 
-There are [a few remaining baseline items](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#outstanding-to-dos) you should considering adding, but hopefully this provides a solid head start if you're choosing to work with these tools or platforms.
+There are [a few remaining baseline items](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#suggested-additions) you should considering adding, but hopefully this provides a solid head start if you're choosing to work with these tools or platforms.
 
 - [Tools & Platforms](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#tools--platforms)
 - [Functionality](https://github.com/ClaytonFarr/sveltekit-netlify-stripe-fauna-example#functionality)
