@@ -51,5 +51,5 @@ module.exports = {
   ],
 };
 
-// discusssion about TW supporting dynamically Svelte generated class names
+// discussion about TW supporting dynamically Svelte generated class names
 // https://github.com/tailwindlabs/tailwindcss/discussions/1731
