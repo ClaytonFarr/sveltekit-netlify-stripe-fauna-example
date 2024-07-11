@@ -1,7 +1,9 @@
-| :point_up: A new version… |
-| ------------------------|
-| If this interests you, I'd suggest checking out this newer version, based on SvelteKit2, Svelte5, and SQLite - https://github.com/ClaytonFarr/justship |
+| :point_up: A Newer Version… |
+| :------------------------|
+| If this interests you, check out this newer version, built with SvelteKit2, Svelte5, and SQLite -<br>
+https://github.com/ClaytonFarr/justship |
 
+---
 
 A SaaS starter boilerplate with elegant UX to use as reference or point to build upon.
 
